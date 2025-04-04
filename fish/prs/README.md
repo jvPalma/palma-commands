@@ -13,6 +13,8 @@
 - Toggle display options via flags
 - Easily extensible with helper functions
 
+[Screen recording 2025-04-03 19.24.58.webm](https://github.com/user-attachments/assets/fe12bfc3-7394-4955-9f45-eb8d4a5611de)
+
 ---
 
 ## ⚙️ Setup
