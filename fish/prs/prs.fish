@@ -1,5 +1,3 @@
-
-
 function prs
 
   function addLineStart
@@ -241,19 +239,14 @@ function prs
 
       addLine "\tChecks:"
       if test $total -eq $successCount
-          addSameLine (set_color green)
-          addSameLine "ALL TESTS PASSED"
+          addSameLine (set_color green)"ALL TESTS PASSED"(set_color normal)
       else if test $failingCount -gt 0
-          addSameLine (set_color red)
-          addSameLine "FAILURE #"$failingCount
+          addSameLine (set_color red)"FAILURE #"$failingCount(set_color normal)
       else if test $pendingCount -gt 0
-          addSameLine (set_color yellow)
-          addSameLine "PENDING #"$$pendingCount
+          addSameLine (set_color yellow)"PENDING #"$$pendingCount(set_color normal)
       else
-          addSameLine (set_color green)
-          addSameLine "ALL TESTS PASSED"
+          addSameLine (set_color green)"ALL TESTS PASSED"(set_color normal)
       end
-          addSameLine (set_color normal)
   end
 
   function print_checks_detailed
@@ -309,6 +302,7 @@ function prs
       echo $pr | jq -c '.reviews | sort_by(.submittedAt) | reverse | unique_by(.author.login)[]?' | while read review
           set user (echo $review | jq -r '.author.login')
           set state (echo $review | jq -r '.state')
+
           set color green
           if test "$state" = "CHANGES_REQUESTED"
               set color red
@@ -342,9 +336,7 @@ function prs
           set joined (string join ", " $summary_labels)
           addSameLine $joined
       else
-          addSameLine (set_color brblack)
-          addSameLine "No relevant labels to show"
-          addSameLine (set_color normal)
+          addSameLine (set_color brblack)"No relevant labels to show"(set_color normal)
       end
   end
 
@@ -354,30 +346,24 @@ function prs
 
       addLine "\tLabels:"
       if test -z "$labels"
-        addSameLine (set_color brblack)
-        addSameLine "No labels"
+        addSameLine (set_color brblack)"No labels"
       else
           for label in $labels
               if contains $label $dangList
                   addLine "\t\t"
-                  addSameLine (set_color red)
-                  addSameLine $label
+                  addSameLine (set_color red)$label(set_color normal)
               else if contains $label $warnList
                   addLine "\t\t"
-                  addSameLine (set_color yellow)
-                  addSameLine $label
+                  addSameLine (set_color yellow)$label(set_color normal)
               else if contains $label $goodList
                   addLine "\t\t"
-                  addSameLine (set_color green)
-                  addSameLine $label
+                  addSameLine (set_color green)$label(set_color normal)
               else
                   addLine "\t\t"
-                  addSameLine (set_color brblack)
-                  addSameLine $label
+                  addSameLine (set_color brblack)$label(set_color normal)
               end
           end
       end
-      addSameLine (set_color normal)
   end
     
   # load global variables
