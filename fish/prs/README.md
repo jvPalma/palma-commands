@@ -130,8 +130,7 @@ Only display PRs and their label classifications (e.g., `skip-ci`, `ready-to-mer
 prs -c -r -d
 ```
 
-Show all open PR's, including the ones in **draft**, detailed **checks** and **reviewers** together.
-
+Show all open PRs, including the ones in **draft**, detailed **checks** and **reviewers** together.
 ---
 
 ## 📦 Requirements
