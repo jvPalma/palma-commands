@@ -3,7 +3,6 @@
 # Paths
 SOURCE="$(dirname "$0")/prs.fish"
 TARGET="$HOME/.config/fish/functions/prs.fish"
-ENV_SOURCE="$(dirname "$0")/../../.prs.env"
 ENV_TARGET="$HOME/.prs.env"
 
 # Create target directory if it doesn't exist
