@@ -1,5 +1,6 @@
 from prs.utils.formatting import color_text
 
+# Define the label category lists
 DANG_LIST = ["skip-ci", "conflict", "do-not-merge", "no-reviewers"]
 WARN_LIST = ["force-ci", "ignore-fe-cache", "skip-second-review"]
 GOOD_LIST = [
@@ -10,45 +11,68 @@ GOOD_LIST = [
 ]
 
 
-def format_labels(pr, mode: str) -> str:
+def analyze_labels(pr):
     """
-    Returns a formatted string for the labels.
-    Mode can be "none", "short", or "long".
-    For short mode, labels are displayed in one line; for long, each label is on its own line.
+    Analyzes the labels on the given PR.
+
+    Returns a list of tuples (label, color), where the color is determined by:
+      - "red" if the label is in DANG_LIST
+      - "yellow" if the label is in WARN_LIST
+      - "green" if the label is in GOOD_LIST
+      - "brblack" otherwise.
     """
-    if mode == "none":
-        return ""
-    labels = pr.labels
-    formatted_labels = []
-    for label in labels:
+    details = []
+    for label in pr.labels:
         if label in DANG_LIST:
-            color = "red"
+            color = "brred"
         elif label in WARN_LIST:
             color = "yellow"
         elif label in GOOD_LIST:
             color = "green"
         else:
             color = "brblack"
-        formatted_labels.append(color_text(label, color))
-    if not formatted_labels:
+        details.append((label, color))
+    return details
+
+
+def get_labels(pr, mode: str) -> str:
+    """
+    Formats the PR labels based on the provided mode.
+
+    Modes:
+      - "none": returns an empty string.
+      - "short" or "normal": returns a comma-separated list of colored labels.
+      - "long": returns each colored label on its own line (with indent).
+
+    If there are no labels, returns a message in "brblack" color.
+
+    Raises:
+      ValueError: if an unknown mode is provided.
+    """
+    if mode == "none":
+        return ""
+    details = analyze_labels(pr)
+
+    if not details:
         result = color_text("No relevant labels to show", "brblack")
     else:
-        result = ", ".join(formatted_labels)
-    if mode == "long":
-        result = "\n\t\t" + "\n\t\t".join(formatted_labels)
+        if mode == "short":
+            if not details:
+                return color_text("[LABL]", "brblack")
+            label, color = details[0]
+            return color_text("[LABL]", color)
+        elif mode == "normal":
+            result = ", ".join(
+                [
+                    color_text(label, color)
+                    for label, color in details
+                    if color != "brblack"
+                ]
+            )
+        elif mode == "long":
+            result = "\n\t\t".join(
+                [color_text(label, color) for label, color in details]
+            )
+        else:
+            raise ValueError(f"Unknown mode: {mode}")
     return result
-
-
-def compute_labels_status(pr):
-    for label in pr.labels:
-        if label in ["skip-ci", "conflict", "do-not-merge", "no-reviewers"]:
-            return "LABL", "red"
-    for label in pr.labels:
-        if label in [
-            "ready-after-ci",
-            "ready-to-merge",
-            "deploy-pr-backoffice",
-            "deploy-pr-frontoffice",
-        ]:
-            return "LABL", "green"
-    return "LABL", "yellow"

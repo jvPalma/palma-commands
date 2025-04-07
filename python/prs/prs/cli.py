@@ -16,35 +16,39 @@ def run_cli():
     parser.add_argument(
         "--pr_url",
         type=str,
-        choices=["none", "short", "long"],
+        choices=["none", "short", "normal", "long"],
         default=None,
         help="Set display verbosity for PR URL",
     )
     parser.add_argument(
         "--branch",
+        "-b",
         type=str,
-        choices=["none", "short", "long"],
+        choices=["none", "short", "normal", "long"],
         default=None,
         help="Set display verbosity for branch",
     )
     parser.add_argument(
         "--checks",
+        "-c",
         type=str,
-        choices=["none", "short", "long"],
+        choices=["none", "short", "normal", "long"],
         default=None,
         help="Set display verbosity for checks",
     )
     parser.add_argument(
         "--reviews",
+        "-r",
         type=str,
-        choices=["none", "short", "long"],
+        choices=["none", "short", "normal", "long"],
         default=None,
         help="Set display verbosity for reviews",
     )
     parser.add_argument(
         "--labels",
+        "-l",
         type=str,
-        choices=["none", "short", "long"],
+        choices=["none", "short", "normal", "long"],
         default=None,
         help="Set display verbosity for labels",
     )

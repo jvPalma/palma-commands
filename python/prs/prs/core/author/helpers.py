@@ -51,3 +51,15 @@ def compute_author_status(pr):
         return color_text_bg(user, fg, bg)
     else:
         return color_text(user, fg)
+
+
+def get_author(pr, mode: str) -> str:
+    # mode "none" returns an empty string,
+    # mode "any other value" return the username,
+
+    if mode == "none":
+        return ""
+    elif mode == "short":
+        return compute_author_status(pr)
+    else:
+        return compute_author_status(pr)

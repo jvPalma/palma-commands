@@ -1,6 +1,8 @@
 def compute_open_status(pr):
-    # [OPEN]: green if not draft; gray-4 if draft.
-    return "OPEN", "gray-4" if pr.isDraft else "green"
+    if pr.isDraft:
+        return "DRFT", "gray-4"
+    else:
+        return "OPEN", "green"
 
 
 def format_title(title: str) -> str:
