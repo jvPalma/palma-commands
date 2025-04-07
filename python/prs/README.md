@@ -28,7 +28,7 @@ PRS is a command-line utility to inspect your GitHub pull requests. It shows ope
 
    ```bash
    cd palma-commands/python/prs
-   chmod -x ./install.sh
+   chmod +x ./install.sh
    ./install.sh # this will copy the dist/prs binary to the `/home/user/bin` folder
    ```
 
