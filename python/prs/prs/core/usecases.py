@@ -11,6 +11,8 @@ from prs.vc_tools.github.client import get_pull_request_details, list_pull_reque
 
 def list_pull_requests(options: dict):
     # Read display modes from CLI options or config as fallback.
+    include_drafts = options.get("include_draft", False)
+
     author_mode = options.get("author", get("pr-info", "author", fallback="short"))
     checks_mode = options.get("checks", get("pr-info", "checks", fallback="short"))
     review_mode = options.get("reviews", get("pr-info", "reviews", fallback="short"))
@@ -18,12 +20,11 @@ def list_pull_requests(options: dict):
     pr_url_mode = options.get("pr_url", get("pr-info", "pr_url", fallback="normal"))
     branch_mode = options.get("branch", get("pr-info", "branch", fallback="normal"))
 
-    config_username = get("git", "username")
     filters = {
-        "author": config_username,
         "state": "open",
-        "include_draft": options.get("include_draft", False),
+        "include_draft": include_drafts,
     }
+
     pr_refs = list_pull_request_ids(filters)
     all_prs = []
     for pr_id, source_tag, is_draft in pr_refs:

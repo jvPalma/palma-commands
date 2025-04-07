@@ -5,7 +5,7 @@ from prs.config import get
 from prs.core.helpers import read_authors, resolve_owner
 
 
-def list_all_prs():
+def list_all_prs(filters: dict):
     """
     Uses 'gh api' with the search/issues endpoint to fetch PRs for each author.
     For each author from the config, executes the command:
@@ -17,9 +17,11 @@ def list_all_prs():
     repo_name = get("git", "repo_name")
     authors = read_authors()
     all_results = []
+    state_value = filters.get("state")
+    draft_value = filters["include_draft"]
 
     for author in authors:
-        query = f"repo:{owner}/{repo_name} is:pr is:open draft:false author:{author}"
+        query = f"repo:{owner}/{repo_name} is:pr is:{state_value} draft:{draft_value} author:{author}"
         gh_args = [
             "gh",
             "api",
@@ -53,7 +55,7 @@ def list_pull_request_ids(filters: dict) -> list[tuple[int, str, bool]]:
     Calls list_all_prs to aggregate PRs from all authors and returns a list of tuples:
       (pr_id, source_tag, isDraft)
     """
-    data = list_all_prs()
+    data = list_all_prs(filters)
     result = []
     for pr in data:
         number = pr.get("number")

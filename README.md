@@ -1,36 +1,62 @@
-# 🛠️ Palma Commands
+# Palma Commands
 
-**Palma Commands** is a personal collection of terminal tools, helpers, and CLI enhancements built for productivity and daily developer workflows.  
-Designed to work with Fish Shell and modern tooling like `gh`, `jq`, `docker`, and more.
+**Palma Commands** is a personal collection of terminal tools and CLI utilities designed to boost developer productivity. This repository contains modular command-line tools built for Fish Shell and other environments.
 
-> This repository is modular — each tool or command lives in its own folder and is self-contained, documented, and ready to install.
+## Tools Included
 
-### Feel free to fork and adapt these scripts for your own workflows. :muscle:
+- **PRS**  
+  A Pull Request Status CLI that displays GitHub PRs, along with their CI checks, review statuses, labels, and more. It features configurable verbosity, rich color formatting, and a modular design.
 
----
+- *(Other tools can be listed here.)*
 
-## 📦 Tools Available
+## PRS - Pull Request Status CLI
 
-| Tool                | Description                                                                                                                                           |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`prs`](./fish/prs) | A CLI utility to inspect your GitHub pull requests, check CI status, review states, labels, and more — all from the terminal with colors and control. |
+PRS is a Python-based command-line utility that helps you quickly inspect your open pull requests on GitHub. It displays detailed information with color-coded summaries and supports multiple verbosity modes.
 
----
+### Features
 
-## 🧭 How to Use
+- **List Open PRs:** Displays each PR with:
+  - A 6-digit, zero-padded PR number.
+  - A 70-character title (truncated with ellipsis if too long).
+  - A structured summary line showing:
+    - Status (`OPEN` or `DRFT`),
+    - Checks summary,
+    - Reviews summary,
+    - Labels summary,
+    - Author (with unique colors per user; own username in black-on-green).
+  - Optional details: PR URL and branch name.
+- **Configurable:** Set default verbosity levels in the configuration file (`~/.prsconfig`) and override them with CLI flags.
+- **Modular Architecture:** Each component (checks, reviews, labels, title, author) has its own helper module for easy customization.
 
-Each tool comes with its own:
+### Quick Start
 
-- Installation script (`install.sh`)
-- Documentation (`README.md`)
-- Configuration if needed (e.g., `.env` files)
-- Fish Shell-compatible code
+1. **Clone the Repository:**
 
-To install a tool, navigate into its folder and follow the specific instructions.
+   ```bash
+   git clone https://github.com/your-user/palma-commands.git
+   ```
 
-For example:
+2. **Build and Install PRS:**
 
-```bash
-cd fish/prs
-./install.sh
-```
+   Follow the instructions in the [python/prs/README.md](python/prs/README.md) file to build the standalone executable and install it. For example, after building with PyInstaller:
+
+   ```bash
+   cd palma-commands/python/prs
+   chmod -x ./install.sh
+   ./install.sh # this will copy the dist/prs binary to the `/home/user/bin` folder
+   # you may need to source ~/.bashrc to index the new binary, or, close and open a new one
+   ```
+
+3. **Run the Tool from Anywhere:**
+
+   ```bash
+   prs --help
+   ```
+
+## Contributing
+
+Contributions, bug reports, and suggestions are welcome! Feel free to fork this repository and create pull requests with improvements.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.

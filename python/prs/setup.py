@@ -6,7 +6,8 @@ setup(
     packages=find_packages(),
     entry_points={
         "console_scripts": [
-            "nprs=prs.main:main",
+            # "nprs=prs.main:main",
+            "prs=prs.main:main",
         ],
     },
 )

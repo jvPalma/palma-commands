@@ -10,7 +10,6 @@ __pycache__/
 .Python
 build/
 develop-eggs/
-dist/
 downloads/
 eggs/
 .eggs/
@@ -102,3 +101,5 @@ dmypy.json
 
 # Exclude any files with the .out extension
 *.out
+
+*.spec
