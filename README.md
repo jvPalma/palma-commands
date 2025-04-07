@@ -42,7 +42,7 @@ PRS is a Python-based command-line utility that helps you quickly inspect your o
 
    ```bash
    cd palma-commands/python/prs
-   chmod -x ./install.sh
+   chmod +x ./install.sh
    ./install.sh # this will copy the dist/prs binary to the `/home/user/bin` folder
    # you may need to source ~/.bashrc to index the new binary, or, close and open a new one
    ```
