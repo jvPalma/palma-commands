@@ -80,7 +80,7 @@ def get_checks(pr, mode: str):
         if details:
             return "\n\t\t".join(
                 [
-                    f"{color_text(state.ljust(12), color)} {context}"
+                    f"{color_text(state.ljust(14), color)} {context}"
                     for state, context, color in details
                 ]
             )
