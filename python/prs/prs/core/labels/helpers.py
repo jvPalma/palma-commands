@@ -1,3 +1,4 @@
+from prs.core.models import PullRequest
 from prs.utils.formatting import color_text
 
 # Define the label category lists
@@ -11,7 +12,7 @@ GOOD_LIST = [
 ]
 
 
-def analyze_labels(pr):
+def analyze_labels(pr: PullRequest):
     """
     Analyzes the labels on the given PR.
 
@@ -35,7 +36,7 @@ def analyze_labels(pr):
     return details
 
 
-def get_labels(pr, mode: str) -> str:
+def get_labels(pr: PullRequest, mode: str) -> str:
     """
     Formats the PR labels based on the provided mode.
 

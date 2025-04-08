@@ -1,7 +1,8 @@
+from prs.core.models import PullRequest
 from prs.utils.formatting import color_text
 
 
-def analyze_reviews(pr):
+def analyze_reviews(pr: PullRequest):
     """
     Analyzes the reviews on the given PR.
 
@@ -19,7 +20,7 @@ def analyze_reviews(pr):
     details = []
     seen_authors = set()
     for review in pr.reviews:
-        author = review.get("author", {}).get("login", "unknown")
+        author = review.get("author")
         # Skip duplicate authors
         if author in seen_authors:
             continue
@@ -46,7 +47,7 @@ def analyze_reviews(pr):
     return summary, details
 
 
-def get_reviews(pr, mode: str) -> str:
+def get_reviews(pr: PullRequest, mode: str) -> str:
     """
     Formats the reviews information based on the provided mode.
 

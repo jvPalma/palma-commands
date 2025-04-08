@@ -3,6 +3,7 @@ import subprocess
 
 from prs.config import get
 from prs.core.helpers import read_authors, resolve_owner
+from prs.vc_tools.github.adapter import pr_info_to_model
 
 
 def list_all_prs(filters: dict):
@@ -20,8 +21,13 @@ def list_all_prs(filters: dict):
     state_value = filters.get("state")
     draft_value = filters["include_draft"]
 
+    if draft_value:  # If include_draft is True, we want to INCLUDE draft PRs, so we exclude the "draft:" filter.
+        draft_value = ""
+    else:  # If include_draft is False, we include the "draft:false" to filter them out.
+        draft_value = "draft:false"
+
     for author in authors:
-        query = f"repo:{owner}/{repo_name} is:pr is:{state_value} draft:{draft_value} author:{author}"
+        query = f"repo:{owner}/{repo_name} is:pr is:{state_value} {draft_value} author:{author}"
         gh_args = [
             "gh",
             "api",
@@ -80,12 +86,12 @@ def get_pull_request_details(pr_id: int) -> dict:
         "--repo",
         f"{owner}/{repo_name}",
         "--json",
-        "number,title,author,labels,statusCheckRollup,reviews,url,headRefName,isDraft",
+        "number,title,author,labels,statusCheckRollup,reviews,reviewRequests,url,headRefName,isDraft",
     ]
     try:
         output = subprocess.check_output(gh_args, text=True)
         data = json.loads(output)
-        return data
+        return pr_info_to_model(data)
     except subprocess.CalledProcessError as e:
         print("Error fetching details for PR #", pr_id, e)
         return {}
