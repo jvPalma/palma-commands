@@ -5,7 +5,6 @@ from prs.core.labels.helpers import get_labels
 from prs.core.reviews.helpers import get_reviews
 from prs.core.title.helpers import compute_open_status, format_title
 from prs.utils.formatting import OutputBuilder, color_text
-from prs.vc_tools.github.adapter import to_model
 from prs.vc_tools.github.client import get_pull_request_details, list_pull_request_ids
 
 
@@ -28,8 +27,7 @@ def list_pull_requests(options: dict):
     pr_refs = list_pull_request_ids(filters)
     all_prs = []
     for pr_id, source_tag, is_draft in pr_refs:
-        raw = get_pull_request_details(pr_id)
-        pr_model = to_model(raw)
+        pr_model = get_pull_request_details(pr_id)
         pr_model.source = source_tag
         pr_model.isDraft = is_draft
         all_prs.append(pr_model)

@@ -1,7 +1,9 @@
 from prs.utils.formatting import color_text
 
+from prs.core.models import PullRequest
 
-def analyze_checks(pr):
+
+def analyze_checks(pr: PullRequest):
     """
     Analyzes the checks on the given PR.
     Returns a tuple:
@@ -36,7 +38,7 @@ def analyze_checks(pr):
     return total, success_count, pending_count, failing_count, details
 
 
-def get_checks(pr, mode: str):
+def get_checks(pr: PullRequest, mode: str):
     """
     Formats the PR checks based on the mode.
 
