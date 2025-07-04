@@ -25,6 +25,8 @@ This will install to `~/.fonts` by default. To install to a custom location:
 curl -s https://raw.githubusercontent.com/jvPalma/palma-commands/master/.fonts/_core/download.sh | bash -s -- "/path/to/your/fonts"
 ```
 
+![Screenshot 2025-07-04 20 35 55](https://github.com/user-attachments/assets/68e7366c-6b37-48ef-8d18-bc435fd91e3e)
+
 ## Usage
 
 Once installed, navigate to your font directory and run:
@@ -43,14 +45,18 @@ The installer provides:
 
 ## What This Script Does
 
-This font management system allows you to:
-
-1. **Browse and select fonts** from the existing JetBrains Mono and Ubuntu Mono Nerd Fonts collections
-2. **Choose specific variants** - pick only the font styles you want (Bold, Italic, Regular, Light, etc.)
-3. **Save your preferences** - your font selections are remembered in `font-config.json`
-4. **Import new fonts** - download any font from the Nerd Fonts repository using `./_core/import-font.sh <FontName>`
-5. **Install to VS Code** - works with both local VS Code (`/usr/share/code/`) and web-based VS Code containers (`~/.vscode/cli/serve-web/`)
-6. **Generate CSS** - automatically creates `nerdFonts.css` with @import statements for your selected fonts
+| What This Script Does | 
+|--------|
+| **Browse and select fonts** from the existing JetBrains Mono and Ubuntu Mono Nerd Fonts collections |
+| ![Screenshot 2025-07-04 20 36 13](https://github.com/user-attachments/assets/65190bf8-6a1e-4ce1-8de8-d2a8045aa8b0) |
+| **Choose specific variants** - pick only the font styles you want (Bold, Italic, Regular, Light, etc.) |
+| ![Screenshot 2025-07-04 20 36 39](https://github.com/user-attachments/assets/4749dba1-561d-49c2-90f5-73fb73e67c22) |
+| **Save your preferences** - your font selections are remembered in `font-config.json` |
+| ![Screenshot 2025-07-04 20 37 01](https://github.com/user-attachments/assets/2f30aec2-32cb-443e-9044-ffd16fbece06) |
+| **Import new fonts** - download any font from the Nerd Fonts repository using `./_core/import-font.sh <FontName>` |
+| ![Screenshot 2025-07-04 23 10 33](https://github.com/user-attachments/assets/a3b60627-3101-4abd-9edb-7f5e345800dd) |
+| **Install to VS Code** - works with both local VS Code (`/usr/share/code/`) and web-based VS Code containers (`~/.vscode/cli/serve-web/`) |
+| ![Screenshot 2025-07-04 20 42 14](https://github.com/user-attachments/assets/d065a56b-1299-475b-bf2c-5010af7f9aca) |
 
 Perfect for VS Code web environments where fonts need to be re-applied after container updates.
 
@@ -70,7 +76,7 @@ After installing fonts for VS Code web, you'll need to reload the browser to see
 
 1. **Open Developer Console**: Press `Ctrl+Shift+J` (or `Cmd+Option+J` on Mac)
 2. **Hard Reload**: Press `Ctrl+Shift+R` (or `Cmd+Shift+R` on Mac)
-3. **Alternative**: Navigate to Settings > Appearance > Font Family and reselect your font
+3. **Apply new font in VS Code**: Navigate to `Settings` > `Appearance` > `Font Family` and type in your newly installed font 🚀
 
 ## VS Code Settings Configuration
 
@@ -79,17 +85,9 @@ After installing fonts, configure VS Code to use them. Add these settings to you
 ```json
 {
   "editor.fontFamily": "JetBrains Mono Nerd Font, Ubuntu Mono Nerd Font, monospace",
-  "editor.fontSize": 14,
   "editor.fontLigatures": true,
-  "terminal.integrated.fontFamily": "JetBrains Mono Nerd Font, Ubuntu Mono Nerd Font, monospace",
-  "terminal.integrated.fontSize": 14
+  "terminal.integrated.fontFamily": "JetBrains Mono Nerd Font Proto, Ubuntu Mono Nerd Font, monospace",
+  "editor.fontLigatures": true,
 }
 ```
 
-**Example with actual installed fonts** (based on your current selections):
-```json
-{
-  "editor.fontFamily": "JetBrains Mono Nerd Font, Ubuntu Mono Nerd Font, monospace",
-  "terminal.integrated.fontFamily": "JetBrains Mono Nerd Font, Ubuntu Mono Nerd Font, monospace"
-}
-```
