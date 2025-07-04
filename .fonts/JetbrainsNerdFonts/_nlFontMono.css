@@ -1,0 +1,119 @@
+/* JetBrains Mono Nerd Font No Ligatures Mono */
+@font-face {
+    font-family: 'JetBrains Mono Nerd Font NL Mono';
+    src: url('JetBrainsMonoNLNerdFontMono-Thin.ttf') format('truetype');
+    font-weight: 100;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'JetBrains Mono Nerd Font NL Mono';
+    src: url('JetBrainsMonoNLNerdFontMono-ThinItalic.ttf') format('truetype');
+    font-weight: 100;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'JetBrains Mono Nerd Font NL Mono';
+    src: url('JetBrainsMonoNLNerdFontMono-ExtraLight.ttf') format('truetype');
+    font-weight: 200;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'JetBrains Mono Nerd Font NL Mono';
+    src: url('JetBrainsMonoNLNerdFontMono-ExtraLightItalic.ttf') format('truetype');
+    font-weight: 200;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'JetBrains Mono Nerd Font NL Mono';
+    src: url('JetBrainsMonoNLNerdFontMono-Light.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'JetBrains Mono Nerd Font NL Mono';
+    src: url('JetBrainsMonoNLNerdFontMono-LightItalic.ttf') format('truetype');
+    font-weight: 300;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'JetBrains Mono Nerd Font NL Mono';
+    src: url('JetBrainsMonoNLNerdFontMono-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'JetBrains Mono Nerd Font NL Mono';
+    src: url('JetBrainsMonoNLNerdFontMono-Italic.ttf') format('truetype');
+    font-weight: 400;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'JetBrains Mono Nerd Font NL Mono';
+    src: url('JetBrainsMonoNLNerdFontMono-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'JetBrains Mono Nerd Font NL Mono';
+    src: url('JetBrainsMonoNLNerdFontMono-MediumItalic.ttf') format('truetype');
+    font-weight: 500;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'JetBrains Mono Nerd Font NL Mono';
+    src: url('JetBrainsMonoNLNerdFontMono-SemiBold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'JetBrains Mono Nerd Font NL Mono';
+    src: url('JetBrainsMonoNLNerdFontMono-SemiBoldItalic.ttf') format('truetype');
+    font-weight: 600;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'JetBrains Mono Nerd Font NL Mono';
+    src: url('JetBrainsMonoNLNerdFontMono-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'JetBrains Mono Nerd Font NL Mono';
+    src: url('JetBrainsMonoNLNerdFontMono-BoldItalic.ttf') format('truetype');
+    font-weight: 700;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'JetBrains Mono Nerd Font NL Mono';
+    src: url('JetBrainsMonoNLNerdFontMono-ExtraBold.ttf') format('truetype');
+    font-weight: 800;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'JetBrains Mono Nerd Font NL Mono';
+    src: url('JetBrainsMonoNLNerdFontMono-ExtraBoldItalic.ttf') format('truetype');
+    font-weight: 800;
+    font-style: italic;
+}
+
+/* Utility class for mono no ligatures font */
+.font-mono-no-ligatures {
+    font-family: 'JetBrains Mono Nerd Font NL Mono', monospace;
+    -webkit-font-feature-settings: "liga" off, "calt" off;
+    font-feature-settings: "liga" off, "calt" off;
+}

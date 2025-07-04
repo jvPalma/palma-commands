@@ -1,77 +1,38 @@
 # Palma Commands
 
-**Palma Commands** is a personal collection of terminal tools and CLI utilities designed to boost developer productivity. This repository contains modular command-line tools built for Fish Shell and other environments.
+🚀 A curated collection of **developer productivity tools**, **CLI utilities**, and **terminal scripts** designed to streamline your development workflow. This repository contains **command-line tools** for **GitHub PR management**, **VS Code font management**, and other **developer utilities**.
 
-## Tools Included
+**Keywords**: CLI tools, developer tools, productivity scripts, terminal utilities, GitHub PR tools, VS Code customization, Nerd Fonts, Python CLI, shell scripts
 
-- **PRS**  
-  A Pull Request Status CLI that displays GitHub PRs, along with their CI checks, review statuses, labels, and more. It features configurable verbosity, rich color formatting, and a modular design.
+## Repository Structure
 
-- *(Other tools can be listed here.)*
+This repository is organized into different directories, each containing specific tools and utilities. Each tool has its own README.md file with detailed documentation, installation instructions, and usage examples.
 
-## PRS - Pull Request Status CLI
+### 📁 Available Scripts & Tools
 
-PRS is a Python-based command-line utility that helps you quickly inspect your open pull requests on GitHub. It displays detailed information with color-coded summaries and supports multiple verbosity modes.
+| Directory | Tool | Description | Tags |
+|-----------|------|-------------|------|
+| [`python/prs/`](python/prs/) | **PRS - GitHub PR CLI** | Pull Request Status CLI for GitHub - displays PR information with CI checks, reviews, and labels | `github` `pr` `cli` `python` |
+| [`/.fonts/`](.fonts/) | **VS Code Font Manager** | Nerd Font management system for VS Code with interactive selection and auto-installation | `vscode` `fonts` `nerd-fonts` `customization` |
 
-### Features
-
-- **List Open PRs:** Displays each PR with:
-  - A 6-digit, zero-padded PR number.
-  - A 70-character title (truncated with ellipsis if too long).
-  - A structured summary line showing:
-    - Status (`OPEN` or `DRFT`),
-    - Checks summary,
-    - Reviews summary,
-    - Labels summary,
-    - Author (with unique colors per user; own username in black-on-green).
-  - Optional details: PR URL and branch name.
-- **Configurable:** Set default verbosity levels in the configuration file (`~/.prsconfig`) and override them with CLI flags.
-- **Modular Architecture:** Each component (checks, reviews, labels, title, author) has its own helper module for easy customization.
-
-### Quick Start
+## Quick Start
 
 1. **Clone the Repository:**
-
    ```bash
    git clone https://github.com/jvPalma/palma-commands
+   cd palma-commands
    ```
 
-2. **Build and Install PRS:**
-
-   Follow the instructions in the [python/prs/README.md](python/prs/README.md) file to build the standalone executable and install it. For example, after building with PyInstaller:
-
+2. **Navigate to the tool you want to use:**
    ```bash
-   cd palma-commands/python/prs
-   chmod +x ./install.sh
-   ./install.sh # this will copy the dist/prs binary to the `/home/user/bin` folder
-   # you may need to source ~/.bashrc to index the new binary, or, close and open a new one
-   ```
-
-3. **Add your configs**
-
-  ```bash
-nprs config set git.repo_name "anchorage"
-nprs config set git.username "jvPalma-anchorage"
-nprs config set git.origin "username" #   `username` | `org_name` | string
-nprs config set git.upstream "org_name" # `username` | `org_name` | string
-
-nprs config set git-org.org_name "anchorlabsinc"
-
-nprs config set pr-info.pr_url "normal" #   `none` | `normal`
-nprs config set pr-info.branch "none"  #    `none` | `normal`
-nprs config set pr-info.author "normal" #   `none` | `normal`
-
-nprs config set pr-info.checks "short" #    `none` | `short` | `normal` | `long`
-nprs config set pr-info.reviews "short" #   `none` | `short` | `normal` | `long`
-nprs config set pr-info.labels "short" #    `none` | `short` | `normal` | `long`
-
-  ```
+   # For PRS tool
+   cd python/prs/
    
-4. **Run the Tool from Anywhere:**
-
-   ```bash
-   prs --help
+   # For Font Manager
+   cd .fonts/
    ```
+
+3. **Follow the installation instructions in each tool's README.md file**
 
 ## Contributing
 
