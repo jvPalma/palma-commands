@@ -5,6 +5,8 @@ from prs.config import get
 from prs.core.helpers import read_authors, resolve_owner
 from prs.vc_tools.github.adapter import pr_info_to_model
 
+from rich.console import Console
+
 
 def list_all_prs(filters: dict):
     """
@@ -49,7 +51,8 @@ def list_all_prs(filters: dict):
             results = [json.loads(line) for line in output.splitlines() if line.strip()]
             all_results.extend(results)
         except subprocess.CalledProcessError as e:
-            print(f"Error calling gh api for author {author}: {e}")
+            console = Console()
+            console.print(f"[red]Error calling gh api for author {author}: {e}[/red]")
             continue
 
     sorted_results = sorted(all_results, key=lambda x: x["updated_at"], reverse=True)
@@ -86,12 +89,13 @@ def get_pull_request_details(pr_id: int) -> dict:
         "--repo",
         f"{owner}/{repo_name}",
         "--json",
-        "number,title,author,labels,statusCheckRollup,reviews,reviewRequests,url,headRefName,isDraft",
+        "number,title,author,labels,statusCheckRollup,reviews,reviewRequests,url,headRefName,isDraft,comments,additions,deletions,changedFiles,createdAt,updatedAt,state,commits,mergedAt,closedAt,mergedBy",
     ]
     try:
         output = subprocess.check_output(gh_args, text=True)
         data = json.loads(output)
         return pr_info_to_model(data)
     except subprocess.CalledProcessError as e:
-        print("Error fetching details for PR #", pr_id, e)
+        console = Console()
+        console.print(f"[red]Error fetching details for PR #{pr_id}: {e}[/red]")
         return {}

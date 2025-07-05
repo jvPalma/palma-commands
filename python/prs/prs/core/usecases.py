@@ -1,29 +1,35 @@
+from prs.cache.manager import PRCacheManager
 from prs.config import get
-from prs.core.author.helpers import get_author
-from prs.core.checks.helpers import get_checks
-from prs.core.labels.helpers import get_labels
-from prs.core.reviews.helpers import get_reviews
-from prs.core.title.helpers import compute_open_status, format_title
-from prs.utils.formatting import OutputBuilder, color_text
+from prs.core.helpers import resolve_owner
+from prs.core.rich_display import display_prs_rich, display_prs_table
 from prs.vc_tools.github.client import get_pull_request_details, list_pull_request_ids
 
 
 def list_pull_requests(options: dict):
     # Read display modes from CLI options or config as fallback.
     include_drafts = options.get("include_draft", False)
+    enable_cache = options.get("enable_cache", True)  # Cache enabled by default
+    display_format = options.get("format", "panels")  # panels or table
 
-    author_mode = options.get("author", get("pr-info", "author", fallback="short"))
     checks_mode = options.get("checks", get("pr-info", "checks", fallback="short"))
     review_mode = options.get("reviews", get("pr-info", "reviews", fallback="short"))
     labels_mode = options.get("labels", get("pr-info", "labels", fallback="short"))
-    pr_url_mode = options.get("pr_url", get("pr-info", "pr_url", fallback="normal"))
-    branch_mode = options.get("branch", get("pr-info", "branch", fallback="normal"))
+    comments_mode = options.get("comments", get("pr-info", "comments", fallback="short"))
 
     filters = {
         "state": "open",
         "include_draft": include_drafts,
     }
 
+    # Initialize cache manager if enabled
+    cache_manager = None
+    if enable_cache:
+        username = get("git", "username")
+        owner = resolve_owner()
+        repo_name = get("git", "repo_name")
+        if username and owner and repo_name:
+            cache_manager = PRCacheManager(username, owner, repo_name)
+    
     pr_refs = list_pull_request_ids(filters)
     all_prs = []
     for pr_id, source_tag, is_draft in pr_refs:
@@ -31,71 +37,55 @@ def list_pull_requests(options: dict):
         pr_model.source = source_tag
         pr_model.isDraft = is_draft
         all_prs.append(pr_model)
+        
+        # Update cache if enabled
+        if cache_manager:
+            try:
+                # Prepare cache data
+                cache_data = {
+                    "id": pr_model.id,
+                    "title": pr_model.title,
+                    "author": pr_model.author,
+                    "created_at": pr_model.created_at,
+                    "updated_at": pr_model.updated_at,
+                    "state": pr_model.state,
+                    "is_draft": pr_model.is_draft,
+                    "additions": pr_model.additions,
+                    "deletions": pr_model.deletions,
+                    "changed_files": pr_model.changed_files,
+                    "checks": {
+                        "status": "unknown"  # Will be enhanced
+                    },
+                    "reviews": pr_model.reviews,
+                    "review_requests": [],  # TODO: Extract from reviewRequests
+                    "labels": pr_model.labels,
+                    "merged": pr_model.merged,
+                    "merged_at": pr_model.merged_at,
+                    "closed_at": pr_model.closed_at,
+                    "merged_by": pr_model.merged_by.get("login") if pr_model.merged_by else None,
+                    "commit_count": len(pr_model.commits)
+                }
+                
+                # Pass detailed checks information for enhanced analysis
+                if pr_model.checks:
+                    # Pass the full checks array for detailed analysis
+                    cache_data["checks"] = pr_model.checks
+                
+                cache_manager.update_pr(cache_data)
+            except Exception as e:
+                # Don't fail if cache update fails
+                pass
 
-    ob = OutputBuilder()
-
-    for pr in all_prs:
-        # Format PR number to always occupy 6 characters with leading zeros.
-        pr_number = color_text(f"#{pr.id:06d}", "gray-4")
-        # Format title to 70 characters; if PR is draft, color it gray-4; otherwise blue.
-        title_formatted = format_title(pr.title)
-        pr_title = (
-            color_text(title_formatted, "gray-3")
-            if pr.isDraft
-            else color_text(title_formatted, "blue")
-        )
-
-        # First line: PR number and title.
-        ob.add_line(f"{pr_number} {pr_title}")
-
-        # Summary line: structured summary.
-        summary_line = []
-
-        #! OPEN
-        open_text, open_color = compute_open_status(pr)
-        summary_line.append(color_text(f"[{open_text}]", open_color))
-
-        #! CHECKS
-        checks_text = get_checks(pr, checks_mode)
-        if checks_mode == "short":
-            summary_line.append(checks_text)
-
-        #! RVWS
-        reviews_text = get_reviews(pr, review_mode)
-        if review_mode == "short":
-            summary_line.append(reviews_text)
-
-        #! LBLS
-        labels_text = get_labels(pr, labels_mode)
-        if labels_mode == "short":
-            summary_line.append(labels_text)
-
-        #! AUTH
-        summary_line.append(get_author(pr, author_mode))
-
-        # ** SUMMARY LINE
-        ob.add_line("    " + " ".join(str(x) for x in summary_line))
-
-        # ? URL
-        if pr_url_mode != "none":
-            ob.add_line("    [LINK] " + color_text(f"{pr.url}", "blue"))
-
-        # ? BRANCH
-        if branch_mode != "none":
-            ob.add_line("    [BNCH] " + color_text(f"{pr.branch}", "yellow"))
-
-        # ? CHECKS
-        if checks_mode == "normal" or checks_mode == "long":
-            ob.add_line("        Checks: " + checks_text)
-
-        # ? RVWS
-        if review_mode == "normal" or review_mode == "long":
-            ob.add_line("        Review: " + reviews_text)
-
-        # ? LBLS
-        if labels_mode == "normal" or labels_mode == "long":
-            ob.add_line("        Labels: " + labels_text)
-
-        ob.add_line("")  # Blank line between PRs
-
-    print(ob.get_output())
+    # Prepare display options
+    display_options = {
+        "checks_mode": checks_mode,
+        "review_mode": review_mode,
+        "labels_mode": labels_mode,
+        "comments_mode": comments_mode,
+    }
+    
+    # Use Rich display
+    if display_format == "table":
+        display_prs_table(all_prs, display_options)
+    else:
+        display_prs_rich(all_prs, display_options)

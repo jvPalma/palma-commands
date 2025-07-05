@@ -28,7 +28,12 @@ branch = short
 checks = short
 reviews = short
 labels = short
+comments = short
 authors = 
+
+[cache]
+enabled = true
+history_minimum = 50
     """
     CONFIG_PATH.write_text(default_config.strip())
 

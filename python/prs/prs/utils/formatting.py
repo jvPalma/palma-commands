@@ -80,6 +80,43 @@ def color_text(text: str, color: str) -> str:
     return f"{ANSI_CODES.get(color, '')}{text}{ANSI_CODES['reset']}"
 
 
+def clickable_link(url: str, text: str = None, color: str = "blue") -> str:
+    """
+    Create a clickable terminal link using ANSI escape sequences.
+    
+    Args:
+        url: The URL to link to
+        text: The text to display (defaults to shortened URL)
+        color: The color for the link text
+    
+    Returns:
+        A clickable link with ANSI escape sequences
+    """
+    if text is None:
+        # Create a shortened display text from the URL
+        if "github.com" in url:
+            # Extract PR number from GitHub URL
+            parts = url.split("/")
+            if "pull" in parts:
+                pr_index = parts.index("pull")
+                if pr_index + 1 < len(parts):
+                    pr_number = parts[pr_index + 1]
+                    text = f"PR #{pr_number}"
+                else:
+                    text = "GitHub PR"
+            else:
+                text = "GitHub"
+        else:
+            text = "Link"
+    
+    # ANSI escape sequence for clickable links: \033]8;;URL\033\\TEXT\033]8;;\033\\
+    link_start = f"\033]8;;{url}\033\\"
+    link_end = "\033]8;;\033\\"
+    colored_text = color_text(text, color)
+    
+    return f"{link_start}{colored_text}{link_end}"
+
+
 class OutputBuilder:
     """
     Helper class to build multi-line output in a structured way.

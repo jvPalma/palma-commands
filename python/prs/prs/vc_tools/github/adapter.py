@@ -1,5 +1,3 @@
-import pprint
-
 from prs.core.models import PullRequest
 
 
@@ -20,28 +18,43 @@ def pr_info_to_model(pr_json: dict) -> PullRequest:
     
     reviews_raw = pr_json.get("reviews", [])
     reviewRequests_raw = pr_json.get("reviewRequests", [])
+    comments_raw = pr_json.get("comments", [])
     
     labels = [lbl.get("name", "") for lbl in pr_json.get("labels", [])]
     
-
-    printer = pprint.PrettyPrinter(indent=4)
-    print("\n\ndetails for PR #", pr_id, ":")
-    print("\nReviews:")
-    printer.pprint(reviews_raw)
-
-    print("\nReview Requests:")
-    printer.pprint(reviewRequests_raw)
-
-    print("\n")
-
+    # Extract new fields
+    additions = pr_json.get("additions", 0)
+    deletions = pr_json.get("deletions", 0)
+    changed_files = pr_json.get("changedFiles", 0)
+    created_at = pr_json.get("createdAt")
+    updated_at = pr_json.get("updatedAt")
+    state = pr_json.get("state", "open")
+    commits = pr_json.get("commits", [])
+    merged_at = pr_json.get("mergedAt")
+    merged = merged_at is not None  # If mergedAt exists, it's merged
+    closed_at = pr_json.get("closedAt")
+    merged_by = pr_json.get("mergedBy")
+    
     return PullRequest(
         id=pr_id,
         title=title,
-        is_draft=is_draft,
-        url=url,
-        branch=branch,
         author=author,
         labels=labels,
         checks=checks_raw,
         reviews=reviews_raw,
+        comments=comments_raw,
+        url=url,
+        branch=branch,
+        is_draft=is_draft,
+        additions=additions,
+        deletions=deletions,
+        changed_files=changed_files,
+        created_at=created_at,
+        updated_at=updated_at,
+        state=state,
+        commits=commits,
+        merged=merged,
+        merged_at=merged_at,
+        closed_at=closed_at,
+        merged_by=merged_by,
     )
