@@ -503,6 +503,12 @@ install_to_web() {
         fi
       done
 
+      # Add import to workbench.css if not present
+      local workbench_css="$target/workbench.css"
+      if [ -f "$workbench_css" ] && ! grep -q 'nerdFonts.css' "$workbench_css"; then
+        sed -i '1i@import "nerdFonts.css";' "$workbench_css"
+      fi
+
       success "Installed to commit hash: $commit_hash"
       echo ""
       echo "  $(highlight "Target:") $target"
