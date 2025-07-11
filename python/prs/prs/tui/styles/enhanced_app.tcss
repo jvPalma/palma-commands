@@ -1,0 +1,611 @@
+/*
+Enhanced Phase 3 PRS TUI Styles
+Comprehensive styling for all Phase 3 widgets and enhancements
+*/
+
+/* ===== GLOBAL STYLES ===== */
+Screen {
+    background: $surface;
+    color: $text;
+}
+
+#enhanced-app-container {
+    layout: vertical;
+    height: 100%;
+}
+
+/* ===== HEADER ===== */
+#header {
+    dock: top;
+    height: 3;
+    background: $primary;
+    color: $text-on-primary;
+    padding: 0 1;
+}
+
+#footer {
+    dock: bottom;
+    height: 3;
+    background: $primary-dark;
+    color: $text-on-primary;
+    padding: 0 1;
+}
+
+/* ===== TABS ===== */
+#main-tabs {
+    margin: 1;
+}
+
+TabbedContent {
+    border: round $border;
+}
+
+TabPane {
+    padding: 1;
+}
+
+/* ===== ANALYTICS DASHBOARD ===== */
+.dashboard-title {
+    text-style: bold;
+    color: $accent;
+    margin-bottom: 1;
+}
+
+.metrics-row {
+    layout: horizontal;
+    height: 6;
+    margin-bottom: 1;
+}
+
+.metric-card {
+    width: 1fr;
+    height: 100%;
+    border: round $border;
+    padding: 1;
+    margin-right: 1;
+}
+
+.metric-card-blue {
+    border: round $info;
+    color: $info;
+}
+
+.metric-card-green {
+    border: round $success;
+    color: $success;
+}
+
+.metric-card-yellow {
+    border: round $warning;
+    color: $warning;
+}
+
+.metric-card-red {
+    border: round $error;
+    color: $error;
+}
+
+.metric-card-purple {
+    border: round $accent;
+    color: $accent;
+}
+
+.metric-title {
+    text-style: bold;
+    margin-bottom: 1;
+}
+
+.metric-value {
+    text-style: bold;
+    text-size: 2;
+    margin-bottom: 1;
+}
+
+.metric-subtitle {
+    color: $text-muted;
+}
+
+.metric-trend {
+    color: $accent;
+}
+
+.charts-row {
+    layout: horizontal;
+    height: 10;
+    margin-bottom: 1;
+}
+
+.chart-container {
+    width: 1fr;
+    border: round $border;
+    padding: 1;
+    margin-right: 1;
+}
+
+.chart-title {
+    text-style: bold;
+    color: $text-primary;
+    margin-bottom: 1;
+}
+
+.status-row {
+    layout: horizontal;
+    height: 12;
+}
+
+.status-container {
+    width: 1fr;
+    border: round $border;
+    padding: 1;
+    margin-right: 1;
+}
+
+.status-title {
+    text-style: bold;
+    margin-bottom: 1;
+}
+
+/* ===== BUILD PROGRESS ===== */
+.build-progress {
+    border: round $border;
+    padding: 1;
+    margin-bottom: 1;
+}
+
+.build-status-running {
+    border: round $info;
+}
+
+.build-status-success {
+    border: round $success;
+}
+
+.build-status-failure {
+    border: round $error;
+}
+
+.build-status-queued {
+    border: round $warning;
+}
+
+.build-header {
+    layout: horizontal;
+    margin-bottom: 1;
+}
+
+.build-name {
+    text-style: bold;
+    width: 1fr;
+}
+
+.build-pr {
+    color: $accent;
+    width: auto;
+    margin-right: 2;
+}
+
+.build-status {
+    width: auto;
+}
+
+.build-details {
+    layout: horizontal;
+    margin-top: 1;
+}
+
+.progress-text {
+    width: auto;
+    margin-right: 2;
+}
+
+.timing-info {
+    color: $text-muted;
+    width: 1fr;
+}
+
+.build-details-expanded {
+    margin-top: 1;
+    padding-top: 1;
+    border-top: solid $border;
+}
+
+.current-step {
+    color: $info;
+    margin-bottom: 1;
+}
+
+.error-message {
+    color: $error;
+    margin-bottom: 1;
+}
+
+.manager-header {
+    layout: horizontal;
+    margin-bottom: 1;
+}
+
+.manager-title {
+    text-style: bold;
+    width: 1fr;
+}
+
+.build-count {
+    color: $text-muted;
+    width: auto;
+    margin-right: 2;
+}
+
+.build-list {
+    height: 1fr;
+}
+
+.no-builds {
+    color: $text-muted;
+    text-align: center;
+    margin: 2;
+}
+
+.build-widget {
+    margin-bottom: 1;
+}
+
+/* ===== BUILDKITE PIPELINE ===== */
+.pipeline-header {
+    layout: horizontal;
+    margin-bottom: 1;
+}
+
+.pipeline-title {
+    text-style: bold;
+    color: $accent;
+    width: 1fr;
+}
+
+.pipeline-slug {
+    color: $text-muted;
+    width: auto;
+    margin-right: 2;
+}
+
+.loading-title {
+    color: $text-muted;
+    width: 1fr;
+}
+
+.pipeline-content {
+    layout: horizontal;
+    height: 1fr;
+}
+
+.pipeline-tree-panel {
+    width: 1fr;
+    border: round $border;
+    padding: 1;
+    margin-right: 1;
+}
+
+.build-details-panel {
+    width: 2fr;
+    border: round $border;
+    padding: 1;
+}
+
+.metrics-panel {
+    dock: bottom;
+    height: 8;
+    border: round $border;
+    padding: 1;
+    margin-top: 1;
+}
+
+.no-selection {
+    color: $text-muted;
+    text-align: center;
+    margin: 2;
+}
+
+.build-details .build-title {
+    text-style: bold;
+    color: $accent;
+    width: 1fr;
+}
+
+.build-state {
+    color: $info;
+    width: auto;
+    margin-right: 2;
+}
+
+.build-duration {
+    color: $text-muted;
+    width: auto;
+}
+
+.build-info-grid {
+    grid-size: 2 4;
+    grid-gutter: 1;
+    margin: 1 0;
+}
+
+.info-label {
+    text-style: bold;
+    color: $text-muted;
+}
+
+.info-value {
+    color: $text-primary;
+}
+
+.build-actions {
+    layout: horizontal;
+    margin: 1 0;
+}
+
+.section-title {
+    text-style: bold;
+    color: $accent;
+    margin: 1 0;
+}
+
+/* ===== LOGS VIEWER ===== */
+.logs-header {
+    layout: horizontal;
+    margin-bottom: 1;
+}
+
+.logs-title {
+    text-style: bold;
+    color: $accent;
+    width: 1fr;
+}
+
+.loading-indicator {
+    color: $warning;
+    width: auto;
+    margin-right: 2;
+}
+
+.log-filter-bar {
+    layout: horizontal;
+    margin-bottom: 1;
+    height: 3;
+}
+
+#search-input {
+    width: 1fr;
+    margin-right: 1;
+}
+
+#level-filter {
+    width: auto;
+    margin-right: 1;
+}
+
+.switch-label {
+    color: $text-muted;
+    margin-left: 1;
+    margin-right: 2;
+}
+
+.logs-main {
+    height: 1fr;
+    border: round $border;
+}
+
+#log-display {
+    padding: 1;
+    background: $surface-variant;
+}
+
+.log-stats {
+    dock: bottom;
+    height: 4;
+    border: round $border;
+    padding: 1;
+    margin-top: 1;
+}
+
+.stats-row {
+    layout: horizontal;
+}
+
+#error-rate-bar {
+    margin-top: 1;
+}
+
+/* ===== TEAM DASHBOARD ===== */
+.dashboard-header {
+    layout: horizontal;
+    margin-bottom: 1;
+}
+
+.view-title {
+    text-style: bold;
+    color: $accent;
+    margin-bottom: 2;
+}
+
+.team-overview {
+    border: round $border;
+    padding: 1;
+    margin-bottom: 2;
+}
+
+.team-metrics-grid {
+    grid-size: 2 6;
+    grid-gutter: 1;
+    margin: 1 0;
+}
+
+.team-metric-label {
+    text-style: bold;
+    color: $text-muted;
+}
+
+.team-metric-value {
+    color: $text-primary;
+}
+
+.team-progress {
+    margin-top: 1;
+}
+
+.contributors-grid {
+    grid-size: 3;
+    grid-gutter: 1;
+}
+
+.contributor-card {
+    border: round $border;
+    padding: 1;
+    height: 12;
+}
+
+.contributor-header {
+    layout: horizontal;
+    margin-bottom: 1;
+}
+
+.contributor-name {
+    text-style: bold;
+    width: 1fr;
+}
+
+.productivity-score {
+    color: $accent;
+    width: auto;
+}
+
+.contributor-metrics {
+    grid-size: 2 4;
+    grid-gutter: 1;
+    margin-bottom: 1;
+}
+
+.metric-label {
+    color: $text-muted;
+}
+
+.metric-value {
+    color: $text-primary;
+}
+
+.approval-bar, .productivity-bar {
+    margin-bottom: 1;
+}
+
+.top-contributors {
+    border: round $border;
+    padding: 1;
+    margin-bottom: 2;
+}
+
+.top-contributors-header {
+    layout: horizontal;
+    margin-bottom: 1;
+}
+
+.contributor-row {
+    layout: horizontal;
+    margin-bottom: 1;
+}
+
+.rank {
+    width: 3;
+    color: $text-muted;
+}
+
+.contributor-name {
+    width: 1fr;
+}
+
+.metric {
+    width: auto;
+    color: $accent;
+    text-align: right;
+}
+
+.quick-stats {
+    layout: horizontal;
+    margin-top: 2;
+}
+
+.stat-card {
+    width: 1fr;
+    border: round $border;
+    padding: 1;
+    margin-right: 1;
+    text-align: center;
+}
+
+.stat-label {
+    color: $text-muted;
+    margin-bottom: 1;
+}
+
+.stat-value {
+    text-style: bold;
+    color: $accent;
+    text-size: 2;
+}
+
+.collaboration-matrix {
+    border: round $border;
+    padding: 1;
+    margin-bottom: 2;
+}
+
+#collaboration-table {
+    height: 15;
+}
+
+.collaboration-insights {
+    border: round $border;
+    padding: 1;
+}
+
+/* ===== COMMON ELEMENTS ===== */
+Button {
+    margin-right: 1;
+}
+
+ProgressBar {
+    margin: 1 0;
+}
+
+DataTable {
+    margin: 1 0;
+}
+
+Select {
+    width: auto;
+    margin-right: 1;
+}
+
+Input {
+    margin-right: 1;
+}
+
+.loading {
+    color: $text-muted;
+    text-align: center;
+    margin: 2;
+}
+
+/* ===== COLOR VARIABLES ===== */
+:root {
+    --primary: #0066cc;
+    --primary-dark: #004499;
+    --accent: #00cc99;
+    --surface: #1a1a1a;
+    --surface-variant: #2d2d2d;
+    --border: #404040;
+    --text: #ffffff;
+    --text-primary: #f0f0f0;
+    --text-muted: #888888;
+    --text-on-primary: #ffffff;
+    --success: #4caf50;
+    --warning: #ff9800;
+    --error: #f44336;
+    --info: #2196f3;
+}

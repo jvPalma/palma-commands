@@ -1,0 +1,631 @@
+/* Default theme for PRS TUI */
+
+/* Global styles */
+Screen {
+    background: $background;
+    color: $text;
+}
+
+/* Header and Footer */
+Header {
+    background: $primary;
+    color: $text-on-primary;
+    text-style: bold;
+}
+
+Footer {
+    background: $secondary;
+    color: $text-on-secondary;
+}
+
+/* Main container */
+#main_container {
+    height: 100%;
+    width: 100%;
+}
+
+/* Control panel */
+#control_panel {
+    height: 3;
+    background: $surface;
+    border: solid $secondary;
+    padding: 0 1;
+    margin-bottom: 1;
+}
+
+.control_row {
+    align: center middle;
+}
+
+#control_panel Button {
+    margin-right: 1;
+    min-width: 8;
+}
+
+#control_panel Checkbox {
+    margin-right: 2;
+}
+
+#control_panel Select {
+    margin-right: 1;
+    min-width: 12;
+}
+
+/* Status bar */
+#status_bar {
+    height: 1;
+    background: $surface-lighten-1;
+    padding: 0 1;
+    margin-bottom: 1;
+}
+
+.status_row {
+    align: center middle;
+}
+
+#status_label {
+    width: 1fr;
+    color: $text-muted;
+}
+
+#stats_label {
+    width: auto;
+    text-align: right;
+    color: $accent;
+    text-style: bold;
+}
+
+#progress_bar {
+    width: 20;
+    margin-left: 1;
+}
+
+/* Content area */
+#content_area {
+    height: 1fr;
+    overflow: auto;
+}
+
+/* PR Panels */
+#panels_container {
+    height: 100%;
+    overflow-y: auto;
+    padding: 0 1;
+}
+
+.pr_panel {
+    height: auto;
+    background: $surface;
+    border: solid $secondary;
+    margin-bottom: 1;
+    padding: 1;
+}
+
+.pr_panel:hover {
+    background: $surface-lighten-1;
+    border: solid $accent;
+}
+
+.pr_panel.selected {
+    background: $primary-lighten-3;
+    border: thick $primary;
+}
+
+.pr_header {
+    height: auto;
+    align: center middle;
+    margin-bottom: 1;
+}
+
+.pr_id {
+    width: 8;
+    color: $accent;
+    text-style: bold;
+}
+
+.pr_title {
+    width: 1fr;
+    text-style: bold;
+    color: $text;
+}
+
+.pr_draft_badge {
+    width: auto;
+    background: $warning;
+    color: $text-on-warning;
+    text-style: bold;
+    padding: 0 1;
+}
+
+.pr_info {
+    height: auto;
+    align: center middle;
+    margin-bottom: 1;
+}
+
+.pr_author {
+    width: 20;
+    color: $text-muted;
+}
+
+.pr_ci_status {
+    width: 20;
+    text-align: center;
+}
+
+.pr_review_status {
+    width: 20;
+    text-align: center;
+}
+
+.pr_labels {
+    height: auto;
+    align: left middle;
+}
+
+.pr_label {
+    background: $info;
+    color: $text-on-info;
+    padding: 0 1;
+    margin-right: 1;
+    border: round;
+}
+
+.pr_label_more {
+    color: $text-muted;
+    text-style: italic;
+}
+
+/* PR Table */
+#pr_table {
+    height: 100%;
+    width: 100%;
+}
+
+#pr_table > .datatable--header {
+    background: $primary;
+    color: $text-on-primary;
+    text-style: bold;
+}
+
+#pr_table > .datatable--odd-row {
+    background: $surface;
+}
+
+#pr_table > .datatable--even-row {
+    background: $surface-lighten-1;
+}
+
+#pr_table > .datatable--hover {
+    background: $primary-lighten-3;
+}
+
+#pr_table > .datatable--cursor {
+    background: $accent;
+    color: $text-on-accent;
+}
+
+/* Modal styles */
+ModalScreen {
+    align: center middle;
+}
+
+/* Search Modal */
+#search_container {
+    width: 80%;
+    height: 80%;
+    background: $surface;
+    border: thick $primary;
+    padding: 1;
+}
+
+#search_title {
+    text-align: center;
+    text-style: bold;
+    color: $primary;
+    margin-bottom: 1;
+}
+
+#criteria_container {
+    height: 60%;
+    border: solid $secondary;
+    padding: 1;
+    margin-bottom: 1;
+    overflow-y: auto;
+}
+
+#preview_container {
+    height: 20%;
+    border: solid $secondary;
+    padding: 1;
+    margin-bottom: 1;
+    overflow-y: auto;
+}
+
+#button_container {
+    height: auto;
+    align: center middle;
+}
+
+.search_row {
+    height: auto;
+    margin-bottom: 1;
+    align: center middle;
+}
+
+.search_input {
+    width: 1fr;
+    margin-right: 1;
+}
+
+.search_select {
+    width: 20;
+    margin-right: 1;
+}
+
+.search_button {
+    width: auto;
+    margin-left: 1;
+}
+
+.section_title {
+    text-style: bold;
+    color: $primary;
+    margin-bottom: 1;
+}
+
+/* Config Modal */
+#config_container {
+    width: 90%;
+    height: 85%;
+    background: $surface;
+    border: thick $primary;
+    padding: 1;
+}
+
+#config_title {
+    text-align: center;
+    text-style: bold;
+    color: $primary;
+    margin-bottom: 1;
+}
+
+#config_tabs {
+    height: 80%;
+    margin-bottom: 1;
+}
+
+.config_section {
+    padding: 1;
+    height: 100%;
+    overflow-y: auto;
+}
+
+.config_row {
+    height: auto;
+    margin-bottom: 1;
+    align: center middle;
+}
+
+.config_label {
+    width: 25%;
+    text-align: right;
+    margin-right: 2;
+    color: $text;
+}
+
+.config_input {
+    width: 50%;
+    margin-right: 1;
+}
+
+.config_description {
+    width: 25%;
+    color: $text-muted;
+}
+
+.config_button {
+    width: auto;
+    margin-left: 1;
+}
+
+.validation_error {
+    color: $error;
+    text-style: italic;
+    margin-top: 1;
+}
+
+.validation_success {
+    color: $success;
+    text-style: italic;
+    margin-top: 1;
+}
+
+/* Help Modal */
+#help_container {
+    width: 90%;
+    height: 90%;
+    background: $surface;
+    border: thick $primary;
+    padding: 1;
+}
+
+#help_title {
+    text-align: center;
+    text-style: bold;
+    color: $primary;
+    margin-bottom: 1;
+}
+
+#help_tabs {
+    height: 85%;
+    margin-bottom: 1;
+}
+
+.help_section {
+    padding: 1;
+    height: 100%;
+    overflow-y: auto;
+}
+
+.help_content {
+    height: 100%;
+    overflow-y: auto;
+}
+
+.shortcut_table {
+    width: 100%;
+    border: solid $secondary;
+    margin-bottom: 1;
+}
+
+.shortcut_row {
+    padding: 1;
+    border-bottom: solid $secondary;
+    align: center middle;
+}
+
+.shortcut_key {
+    width: 30%;
+    text-style: bold;
+    color: $accent;
+}
+
+.shortcut_desc {
+    width: 70%;
+}
+
+.feature_item {
+    margin-bottom: 1;
+    padding: 1;
+    border: solid $secondary;
+    background: $surface-lighten-1;
+}
+
+.feature_title {
+    text-style: bold;
+    color: $primary;
+    margin-bottom: 1;
+}
+
+.code_block {
+    background: $surface-lighten-2;
+    padding: 1;
+    border: solid $secondary;
+    margin: 1 0;
+    text-style: italic;
+    color: $text-muted;
+}
+
+/* Buttons */
+Button {
+    border: solid $secondary;
+    background: $surface;
+    color: $text;
+}
+
+Button:hover {
+    background: $surface-lighten-1;
+    border: solid $accent;
+}
+
+Button:focus {
+    background: $primary;
+    color: $text-on-primary;
+    border: thick $primary;
+}
+
+Button.-primary {
+    background: $primary;
+    color: $text-on-primary;
+    border: solid $primary;
+}
+
+Button.-primary:hover {
+    background: $primary-lighten-1;
+}
+
+Button.-primary:focus {
+    background: $primary-darken-1;
+    border: thick $accent;
+}
+
+/* Inputs */
+Input {
+    border: solid $secondary;
+    background: $surface;
+    color: $text;
+}
+
+Input:focus {
+    border: solid $accent;
+    background: $surface-lighten-1;
+}
+
+Input.-invalid {
+    border: solid $error;
+}
+
+/* Select */
+Select {
+    border: solid $secondary;
+    background: $surface;
+    color: $text;
+}
+
+Select:focus {
+    border: solid $accent;
+    background: $surface-lighten-1;
+}
+
+Select > SelectCurrent {
+    background: $surface;
+    color: $text;
+}
+
+Select:focus > SelectCurrent {
+    background: $surface-lighten-1;
+}
+
+/* Checkbox */
+Checkbox {
+    color: $text;
+}
+
+Checkbox:focus {
+    background: $surface-lighten-1;
+}
+
+Checkbox > .toggle--button {
+    background: $surface;
+    border: solid $secondary;
+    color: $text;
+}
+
+Checkbox.-on > .toggle--button {
+    background: $success;
+    color: $text-on-success;
+    border: solid $success;
+}
+
+/* Progress Bar */
+ProgressBar {
+    background: $surface;
+    border: solid $secondary;
+}
+
+ProgressBar > .bar--bar {
+    background: $primary;
+}
+
+ProgressBar > .bar--percentage {
+    color: $text;
+}
+
+/* Tabs */
+TabbedContent {
+    background: $surface;
+}
+
+Tabs {
+    background: $surface-lighten-1;
+    border-bottom: solid $secondary;
+}
+
+Tab {
+    background: $surface;
+    color: $text-muted;
+    border: solid $secondary;
+    margin-right: 1;
+}
+
+Tab:hover {
+    background: $surface-lighten-1;
+    color: $text;
+}
+
+Tab.-active {
+    background: $primary;
+    color: $text-on-primary;
+    border: solid $primary;
+}
+
+TabPane {
+    background: $surface;
+    padding: 1;
+}
+
+/* DataTable */
+DataTable {
+    background: $surface;
+    color: $text;
+}
+
+DataTable > .datatable--header {
+    background: $primary;
+    color: $text-on-primary;
+    text-style: bold;
+}
+
+DataTable > .datatable--fixed-column {
+    background: $surface-lighten-1;
+}
+
+DataTable > .datatable--cursor {
+    background: $accent;
+    color: $text-on-accent;
+}
+
+DataTable > .datatable--hover {
+    background: $primary-lighten-3;
+}
+
+/* No PRs label */
+#no_prs_label {
+    text-align: center;
+    color: $text-muted;
+    text-style: italic;
+    margin-top: 5;
+}
+
+/* Responsive design */
+@media (max-width: 80) {
+    .pr_panel {
+        padding: 1;
+    }
+    
+    .pr_id {
+        width: 6;
+    }
+    
+    .pr_author, .pr_ci_status, .pr_review_status {
+        width: 15;
+    }
+    
+    .config_label {
+        width: 30%;
+    }
+    
+    .config_input {
+        width: 45%;
+    }
+    
+    .config_description {
+        width: 25%;
+    }
+}
+
+@media (max-width: 60) {
+    #search_container, #config_container {
+        width: 95%;
+        height: 90%;
+    }
+    
+    .shortcut_key {
+        width: 40%;
+    }
+    
+    .shortcut_desc {
+        width: 60%;
+    }
+}

@@ -6,6 +6,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         "rich>=14.0.0",
+        "textual>=0.60.0",
     ],
     entry_points={
         "console_scripts": [

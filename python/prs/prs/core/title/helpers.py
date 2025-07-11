@@ -1,5 +1,5 @@
 def compute_open_status(pr):
-    if pr.isDraft:
+    if pr.is_draft:
         return "DRFT", "gray-4"
     else:
         return "OPEN", "green"

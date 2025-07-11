@@ -1,0 +1,22 @@
+                                                                                
+  🔍 Pull Requests (2 found)                                                    
+                                                                                
+
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/joaopalma/palma-commands/python/prs/prs/main.py", line 9, in <module>
+    main()
+  File "/home/joaopalma/palma-commands/python/prs/prs/main.py", line 5, in main
+    run_cli()
+  File "/home/joaopalma/palma-commands/python/prs/prs/cli.py", line 304, in run_cli
+    list_pull_requests(options)
+  File "/home/joaopalma/palma-commands/python/prs/prs/core/usecases.py", line 97, in list_pull_requests
+    display_prs_rich(all_prs, display_options)
+  File "/home/joaopalma/palma-commands/python/prs/prs/core/rich_display.py", line 382, in display_prs_rich
+    panel = create_pr_panel(pr, options)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/joaopalma/palma-commands/python/prs/prs/core/rich_display.py", line 95, in create_pr_panel
+    line2 = Text()
+            ^^^^
+UnboundLocalError: cannot access local variable 'Text' where it is not associated with a value

@@ -20,3 +20,16 @@ x-row {
   text-rendering: optimizeLegibility;
   font-variant-ligatures: normal;
 }
+
+/* Utility class for mono font */
+.font {
+  font-family: "Ubuntu Mono Nerd Font", monospace;
+}
+/* Utility class for mono font */
+.font-mono {
+  font-family: "Ubuntu Mono Nerd Font Mono", monospace;
+}
+/* Utility class for mono font */
+.font-propo {
+  font-family: "Ubuntu Mono Nerd Font Propo", monospace;
+}

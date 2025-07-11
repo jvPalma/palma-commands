@@ -16,7 +16,18 @@ from rich import print as rprint
 from prs.core.models import PullRequest
 from prs.core.author.helpers import get_author_color
 from prs.core.title.helpers import compute_open_status
-from prs.utils.formatting import color_map
+from prs.core.status.border_logic import get_pr_border_color_and_style
+from prs.core.layout import (
+    build_pr_display,
+    build_multiple_prs_display,
+    build_compact_display,
+    build_detailed_display,
+    format_pr_line1,
+    format_pr_line2_short,
+    format_normal_mode_data,
+    format_long_mode_data
+)
+from prs.config import get
 
 
 def get_rich_color(color_name: str) -> str:
@@ -45,113 +56,247 @@ def get_rich_color(color_name: str) -> str:
 
 
 def create_pr_panel(pr: PullRequest, options: Dict) -> Panel:
-    """Create a Rich panel for a single PR."""
+    """Create a Rich panel for a single PR with proper verbosity filtering."""
     # Get display options
-    checks_mode = options.get("checks_mode", "short")
+    ci_mode = options.get("ci_mode", "short")
     review_mode = options.get("review_mode", "short")
     labels_mode = options.get("labels_mode", "short")
     comments_mode = options.get("comments_mode", "short")
+    author_mode = options.get("author_mode", "short")
+    pr_url_mode = options.get("pr_url_mode", "short")
+    branch_mode = options.get("branch_mode", "short")
     
-    # Create title with PR number and title
-    pr_number = f"#{pr.id:06d}"
-    title_text = pr.title[:70] + "..." if len(pr.title) > 70 else pr.title
-    
-    # Determine title color based on draft status
-    title_color = "bright_black" if pr.is_draft else "blue"
-    
-    # Create panel title
-    panel_title = Text()
-    panel_title.append(pr_number, style="bright_black")
-    panel_title.append(" ", style="")
-    panel_title.append(title_text, style=title_color)
-    
-    # Create content sections
     content_lines = []
     
-    # Status line
-    open_text, open_color = compute_open_status(pr)
-    status_line = Text()
-    status_line.append(f"[{open_text}]", style=get_rich_color(open_color))
+    # Line 1: Empty (title is in panel border)
+    # Line 2: Short mode indicators (only if any field is set to short)
+    short_fields = []
+    if ci_mode == "short" and pr.checks:
+        from prs.core.checks.helpers import get_checks
+        short_fields.append(get_checks(pr, "short"))
+    if review_mode == "short" and pr.reviews:
+        from prs.core.reviews.helpers import get_reviews
+        short_fields.append(get_reviews(pr, "short"))
+    if labels_mode == "short" and pr.labels:
+        from prs.core.labels.helpers import get_labels
+        short_fields.append(get_labels(pr, "short"))
+    if comments_mode == "short" and pr.comments:
+        from prs.core.comments.helpers import get_comments
+        short_fields.append(get_comments(pr, "short"))
+    if author_mode == "short":
+        from prs.core.author.helpers import get_author
+        short_fields.append(get_author(pr, "short"))
+    if branch_mode == "short" and pr.branch:
+        short_fields.append(f"🌿 {pr.branch[:10]}...")
+    if pr_url_mode == "short" and hasattr(pr, 'url'):
+        short_fields.append(f"🔗 PR")
     
-    # Add checks status
-    if pr.checks and checks_mode != "none":
-        checks_summary = _get_checks_summary(pr.checks)
-        status_line.append(" ")
-        status_line.append(checks_summary["text"], style=checks_summary["style"])
+    if short_fields:
+        line2 = Text()
+        line2.append(" | ".join(short_fields))
+        content_lines.append(line2)
     
-    # Add review status
-    if pr.reviews and review_mode != "none":
-        review_summary = _get_review_summary(pr.reviews)
-        status_line.append(" ")
-        status_line.append(review_summary["text"], style=review_summary["style"])
+    # Line 3+: Columnar layout for normal and long modes
+    # Column 1: All normal mode fields
+    normal_items = []
     
-    content_lines.append(status_line)
+    if ci_mode == "normal" and pr.checks:
+        from prs.core.checks.helpers import get_checks
+        # Check if we have GitHub Actions data for enhanced display
+        github_actions_summary = _get_github_actions_summary(pr)
+        if github_actions_summary:
+            normal_items.append(f"GitHub Actions: {github_actions_summary['text']}")
+        else:
+            normal_items.append(f"CI/CD: {get_checks(pr, 'normal')}")
+    if review_mode == "normal" and pr.reviews:
+        from prs.core.reviews.helpers import get_reviews
+        normal_items.append(f"Reviews: {get_reviews(pr, 'normal')}")
+    if labels_mode == "normal" and pr.labels:
+        from prs.core.labels.helpers import get_labels
+        normal_items.append(f"Labels: {get_labels(pr, 'normal')}")
+    if comments_mode == "normal" and pr.comments:
+        from prs.core.comments.helpers import get_comments
+        normal_items.append(f"Comments: {get_comments(pr, 'normal')}")
+    if author_mode == "normal":
+        from prs.core.author.helpers import get_author
+        normal_items.append(f"Author: {get_author(pr, 'normal')}")
+    if branch_mode == "normal" and pr.branch:
+        normal_items.append(f"Branch: {pr.branch}")
+    if pr_url_mode == "normal" and hasattr(pr, 'url'):
+        normal_items.append(f"URL: {getattr(pr, 'url', '')}")
     
-    # Author line
-    author_color = get_author_color(pr.author)
-    author_line = Text()
-    author_line.append("Author: ", style="bright_black")
-    author_line.append(pr.author, style=get_rich_color(author_color))
-    content_lines.append(author_line)
+    # Columns 2+: All long mode fields
+    long_columns = []
     
-    # Metrics line
-    if pr.additions or pr.deletions or pr.changed_files:
-        metrics_line = Text()
-        metrics_line.append("Changes: ", style="bright_black")
-        metrics_line.append(f"+{pr.additions}", style="green")
-        metrics_line.append(" ", style="")
-        metrics_line.append(f"-{pr.deletions}", style="red")
-        metrics_line.append(" ", style="")
-        metrics_line.append(f"({pr.changed_files} files)", style="blue")
-        content_lines.append(metrics_line)
+    if ci_mode == "long" and pr.checks:
+        from prs.core.checks.helpers import get_checks
+        # Check if we have GitHub Actions data for enhanced display
+        if hasattr(pr, 'ci_data') and pr.ci_data:
+            workflows_details = []
+            for workflow in pr.ci_data.workflows[:3]:  # Show top 3 workflows
+                status_emoji = "✅" if workflow.conclusion == "success" else "❌" if workflow.conclusion == "failure" else "🟡"
+                duration = _format_duration(workflow.duration)
+                workflows_details.append(f"{status_emoji} {workflow.name} ({duration})")
+                
+                # Show job details for failed workflows
+                if workflow.conclusion == "failure" and workflow.jobs:
+                    for job in workflow.jobs[:2]:  # Show top 2 failed jobs
+                        if job.conclusion == "failure":
+                            job_duration = _format_duration(job.duration)
+                            workflows_details.append(f"  ↳ {job.name} failed ({job_duration})")
+            
+            if len(pr.ci_data.workflows) > 3:
+                workflows_details.append(f"... and {len(pr.ci_data.workflows) - 3} more workflows")
+            
+            long_columns.append(("GitHub Actions", "\n".join(workflows_details)))
+        else:
+            checks_content = get_checks(pr, 'long')
+            long_columns.append(("CI/CD Detail", checks_content))
+    if review_mode == "long" and pr.reviews:
+        from prs.core.reviews.helpers import get_reviews
+        reviews_content = get_reviews(pr, 'long')
+        long_columns.append(("Reviews Detail", reviews_content))
+    if labels_mode == "long" and pr.labels:
+        from prs.core.labels.helpers import get_labels
+        labels_content = get_labels(pr, 'long')
+        long_columns.append(("Labels Detail", labels_content))
+    if comments_mode == "long" and pr.comments:
+        from prs.core.comments.helpers import get_comments
+        comments_content = get_comments(pr, 'long')
+        long_columns.append(("Comments Detail", comments_content))
+    if author_mode == "long":
+        from prs.core.author.helpers import get_author
+        author_content = get_author(pr, 'long')
+        long_columns.append(("Author Detail", author_content))
+    if branch_mode == "long" and pr.branch:
+        branch_content = f"{pr.branch}\n→ {pr.branch.split('/')[-1]}"
+        long_columns.append(("Branch Detail", branch_content))
+    if pr_url_mode == "long" and hasattr(pr, 'url'):
+        url_content = getattr(pr, 'url', '')
+        long_columns.append(("URL", url_content))
     
-    # Labels
-    if pr.labels and labels_mode != "none":
-        labels_line = Text()
-        labels_line.append("Labels: ", style="bright_black")
-        for i, label in enumerate(pr.labels):
+    # Add normal mode items (line by line)
+    for item in normal_items:
+        content_lines.append(Text.from_ansi(item))
+    
+    # Add separator if we have both normal and long mode content
+    if normal_items and long_columns:
+        content_lines.append(Text("-" * 40, style="bright_black"))
+    
+    # Add long mode items (column titles with content)
+    for title, content in long_columns:
+        # Split content into lines and limit to 7 lines
+        lines = content.split('\n')[:7]
+        if len(content.split('\n')) > 7:
+            lines.append("...")
+        
+        # Create title and content
+        section = Text()
+        section.append(f"{title}:\n", style="bold yellow")
+        section.append("\n".join(lines))
+        content_lines.append(section)
+    
+    # Combine all content
+    if len(content_lines) == 0:
+        # If no content, add an empty line to prevent empty panel
+        content = Text("")
+    elif len(content_lines) == 1:
+        content = content_lines[0]
+    else:
+        # Join multiple lines/elements
+        combined = Text()
+        for i, line in enumerate(content_lines):
             if i > 0:
-                labels_line.append(", ", style="")
-            labels_line.append(label, style="cyan")
-        content_lines.append(labels_line)
+                combined.append("\n")
+            if isinstance(line, Text):
+                combined.append(line)
+            else:
+                # For non-Text objects (like Columns), convert to string
+                combined.append(str(line))
+        content = combined
     
-    # Branch
-    if pr.branch:
-        branch_line = Text()
-        branch_line.append("Branch: ", style="bright_black")
-        branch_line.append(pr.branch, style="yellow")
-        content_lines.append(branch_line)
+    # Panel title (left side): PR number and title
+    title_left = f"#{pr.id:06d} {pr.title[:50]}{'...' if len(pr.title) > 50 else ''}"
     
-    # Combine content
-    content = Text("\n").join(content_lines)
+    # Panel subtitle (right side): File changes
+    subtitle_right = ""
+    if hasattr(pr, 'additions') and hasattr(pr, 'deletions'):
+        if pr.additions or pr.deletions:
+            subtitle_right = f"📊 +{pr.additions or 0}/-{pr.deletions or 0}"
+            if hasattr(pr, 'changed_files') and pr.changed_files:
+                subtitle_right += f" ({pr.changed_files} files)"
     
-    # Create panel with appropriate border style
-    border_style = "green" if open_text == "READY" else "yellow" if pr.is_draft else "white"
+    # Get dynamic border color and style based on PR status
+    border_color, style_info = get_pr_border_color_and_style(pr)
+    
+    # Override with draft styling if needed (drafts get dimmed border)
+    if pr.is_draft:
+        border_style = "bright_black"
+    else:
+        border_style = border_color
     
     return Panel(
         content,
-        title=panel_title,
+        title=title_left,
+        subtitle=subtitle_right,
         title_align="left",
+        subtitle_align="right",
         border_style=border_style,
         box=ROUNDED,
         padding=(0, 1),
     )
 
 
+def _determine_display_mode(options: Dict) -> str:
+    """Determine the display mode based on verbosity options."""
+    # Check verbosity settings to determine appropriate display mode
+    ci_mode = options.get("ci_mode", "short")
+    review_mode = options.get("review_mode", "short")
+    labels_mode = options.get("labels_mode", "short")
+    comments_mode = options.get("comments_mode", "short")
+    author_mode = options.get("author_mode", "short")
+    pr_url_mode = options.get("pr_url_mode", "short")
+    branch_mode = options.get("branch_mode", "short")
+    
+    # Count how many are set to "none" (compact mode)
+    none_count = sum(1 for mode in [ci_mode, review_mode, labels_mode, 
+                                   comments_mode, author_mode, pr_url_mode, branch_mode] 
+                    if mode == "none")
+    
+    # Count how many are set to "long" (detailed mode)
+    long_count = sum(1 for mode in [ci_mode, review_mode, labels_mode, 
+                                   comments_mode, author_mode, pr_url_mode, branch_mode] 
+                    if mode == "long")
+    
+    # Determine mode based on verbosity
+    if none_count >= 5:  # Most are "none"
+        return "compact"
+    elif long_count >= 3:  # Many are "long"
+        return "detailed"
+    else:
+        return "normal"
+
+
 def _get_checks_summary(checks: List[Dict]) -> Dict[str, str]:
-    """Get a summary of check statuses."""
+    """Get a summary of CI/CD check statuses including GitHub Actions."""
     if not checks:
-        return {"text": "○ No checks", "style": "bright_black"}
+        return {"text": "○ No CI/CD", "style": "bright_black"}
     
     # Count check statuses
     success = 0
     failure = 0
     pending = 0
+    github_actions_count = 0
     
     for check in checks:
         if isinstance(check, dict):
             status = check.get("status", "").upper()
             conclusion = check.get("conclusion", "").upper()
+            context = check.get("context", "")
+            
+            # Track GitHub Actions workflows
+            if context.startswith("github-actions/"):
+                github_actions_count += 1
             
             if status == "COMPLETED":
                 if conclusion in ["SUCCESS", "NEUTRAL", "SKIPPED"]:
@@ -163,12 +308,75 @@ def _get_checks_summary(checks: List[Dict]) -> Dict[str, str]:
     
     total = len(checks)
     
-    if failure > 0:
-        return {"text": f"✗ Checks {success}/{total}", "style": "red"}
-    elif pending > 0:
-        return {"text": f"◐ Checks {success}/{total}", "style": "yellow"}
+    # Enhanced display for GitHub Actions
+    if github_actions_count > 0:
+        ga_text = f"GHA+{total-github_actions_count}" if total > github_actions_count else "GHA"
+        
+        if failure > 0:
+            return {"text": f"✗ {ga_text} {success}/{total}", "style": "red"}
+        elif pending > 0:
+            return {"text": f"◐ {ga_text} {success}/{total}", "style": "yellow"}
+        else:
+            return {"text": f"✓ {ga_text} {success}/{total}", "style": "green"}
     else:
-        return {"text": f"✓ Checks {success}/{total}", "style": "green"}
+        # Fallback for non-GitHub Actions checks
+        if failure > 0:
+            return {"text": f"✗ CI/CD {success}/{total}", "style": "red"}
+        elif pending > 0:
+            return {"text": f"◐ CI/CD {success}/{total}", "style": "yellow"}
+        else:
+            return {"text": f"✓ CI/CD {success}/{total}", "style": "green"}
+
+
+def _format_duration(duration: Optional[int]) -> str:
+    """Format duration in seconds to human-readable format."""
+    if not duration:
+        return "N/A"
+    
+    if duration < 60:
+        return f"{duration}s"
+    elif duration < 3600:
+        minutes = duration // 60
+        seconds = duration % 60
+        return f"{minutes}m {seconds}s"
+    else:
+        hours = duration // 3600
+        minutes = (duration % 3600) // 60
+        return f"{hours}h {minutes}m"
+
+
+def _get_github_actions_summary(pr) -> Optional[Dict[str, str]]:
+    """Get GitHub Actions specific summary if CI data is available."""
+    if not hasattr(pr, 'ci_data') or not pr.ci_data:
+        return None
+    
+    ci_data = pr.ci_data
+    
+    # GitHub Actions emoji indicators
+    if ci_data.failed_workflows > 0:
+        return {
+            "text": f"⚡ {ci_data.failed_workflows} failed",
+            "style": "red",
+            "emoji": "❌"
+        }
+    elif ci_data.pending_workflows > 0:
+        return {
+            "text": f"⚡ {ci_data.pending_workflows} running",
+            "style": "yellow", 
+            "emoji": "🟡"
+        }
+    elif ci_data.successful_workflows > 0:
+        return {
+            "text": f"⚡ {ci_data.successful_workflows} passed",
+            "style": "green",
+            "emoji": "✅"
+        }
+    else:
+        return {
+            "text": "⚡ no workflows",
+            "style": "bright_black",
+            "emoji": "○"
+        }
 
 
 def _get_review_summary(reviews: List[Dict]) -> Dict[str, str]:
@@ -197,28 +405,98 @@ def _get_review_summary(reviews: List[Dict]) -> Dict[str, str]:
 
 
 def display_prs_rich(prs: List[PullRequest], options: Dict):
-    """Display PRs using Rich formatting."""
+    """Display PRs using Rich formatting with the new layout system."""
     console = Console()
     
-    # Create header
+    # Handle empty PR list
+    if not prs:
+        console.print(Panel(
+            Text("No pull requests found.", style="bright_black"),
+            title="Pull Requests",
+            title_style="bold blue",
+            border_style="blue",
+            box=MINIMAL_HEAVY_HEAD
+        ))
+        return
+    
+    # Create header with enhanced information
     header = Text()
     header.append("🔍 ", style="blue")
     header.append("Pull Requests", style="bold blue")
-    header.append(f" ({len(prs)} open)", style="bright_black")
+    header.append(f" ({len(prs)} found)", style="bright_black")
+    
+    # Add status summary
+    draft_count = sum(1 for pr in prs if pr.is_draft)
+    open_count = len(prs) - draft_count
+    if draft_count > 0:
+        header.append(f" • {open_count} open, {draft_count} draft", style="cyan")
+    
     console.print(Panel(header, box=MINIMAL_HEAVY_HEAD, border_style="blue"))
     console.print()
     
-    # Display each PR as a panel
-    for pr in prs:
+    # Display each PR using the fixed panel creation
+    for i, pr in enumerate(prs):
         panel = create_pr_panel(pr, options)
         console.print(panel)
-        console.print()  # Space between panels
+        
+        # Add spacing between PRs except for the last one
+        if i < len(prs) - 1:
+            console.print()
+
+
+def _display_prs_compact_panels(prs: List[PullRequest], options: Dict, console: Console):
+    """Display PRs using compact panels for better space efficiency."""
+    for i, pr in enumerate(prs):
+        # Use compact display from layout system
+        content_text = build_compact_display(pr)
+        content = Text.from_ansi(content_text)
+        
+        # Get border color based on PR status
+        border_color, style_info = get_pr_border_color_and_style(pr)
+        border_style = "bright_black" if pr.is_draft else border_color
+        
+        # Create simple panel with minimal padding
+        panel = Panel(
+            content,
+            border_style=border_style,
+            box=SIMPLE,
+            padding=(0, 1),
+            expand=False
+        )
+        
+        console.print(panel)
+        
+        # Add minimal spacing between PRs
+        if i < len(prs) - 1:
+            console.print()
+
+
+def _display_prs_full_panels(prs: List[PullRequest], options: Dict, console: Console):
+    """Display PRs using full panels with complete layout system."""
+    for i, pr in enumerate(prs):
+        panel = create_pr_panel(pr, options)
+        console.print(panel)
+        
+        # Add space between panels
+        if i < len(prs) - 1:
+            console.print()
 
 
 def create_pr_table(prs: List[PullRequest], options: Dict) -> Table:
-    """Create a Rich table view of PRs."""
+    """Create a Rich table view of PRs with enhanced layout integration."""
+    # Determine table layout based on options and number of PRs
+    is_compact = _determine_display_mode(options) == "compact" or len(prs) > 20
+    
+    if is_compact:
+        return _create_compact_table(prs, options)
+    else:
+        return _create_detailed_table(prs, options)
+
+
+def _create_compact_table(prs: List[PullRequest], options: Dict) -> Table:
+    """Create a compact table for many PRs or when verbosity is low."""
     table = Table(
-        title="Pull Requests",
+        title=f"Pull Requests ({len(prs)} found)",
         title_style="bold blue",
         show_header=True,
         header_style="bold cyan",
@@ -226,57 +504,195 @@ def create_pr_table(prs: List[PullRequest], options: Dict) -> Table:
         expand=False,
     )
     
-    # Add columns
-    table.add_column("PR", style="bright_black", no_wrap=True)
-    table.add_column("Title", style="blue", overflow="ellipsis", max_width=50)
-    table.add_column("Status", justify="center")
-    table.add_column("Checks", justify="center")
-    table.add_column("Reviews", justify="center")
-    table.add_column("Author", style="cyan")
-    table.add_column("Changes", justify="right")
+    # Compact columns
+    table.add_column("PR", style="bright_black", no_wrap=True, width=8)
+    table.add_column("Title", style="blue", overflow="ellipsis", max_width=60)
+    table.add_column("Health", justify="center", width=6)
+    table.add_column("Status", justify="center", width=8)
+    table.add_column("Author", style="cyan", width=12)
     
-    # Add rows
     for pr in prs:
         # PR number
         pr_num = f"#{pr.id:06d}"
         
-        # Title
+        # Title with draft styling
+        title = pr.title[:60] + "..." if len(pr.title) > 60 else pr.title
+        if pr.is_draft:
+            title = Text(title, style="bright_black")
+        
+        # Health indicator using border color logic
+        border_color, style_info = get_pr_border_color_and_style(pr)
+        health_indicators = {
+            "green": "●●●",
+            "cyan": "●●○", 
+            "yellow": "●○○",
+            "red": "●××"
+        }
+        health_text = health_indicators.get(border_color, "○○○")
+        health = Text(health_text, style=border_color)
+        
+        # Status with emoji
+        open_text, open_color = compute_open_status(pr)
+        status_icon = "🟢" if open_text == "OPEN" else "🟡" if open_text == "DRFT" else "⚫"
+        status = Text(f"{status_icon} {open_text[:4]}", style=get_rich_color(open_color))
+        
+        # Author with color coding
+        config_username = get("git", "username")
+        author_color, _ = get_author_color(pr.author, config_username)
+        author = Text(pr.author[:12], style=get_rich_color(author_color))
+        
+        table.add_row(pr_num, title, health, status, author)
+    
+    return table
+
+
+def _create_detailed_table(prs: List[PullRequest], options: Dict) -> Table:
+    """Create a detailed table with full information."""
+    table = Table(
+        title=f"Pull Requests - Detailed View ({len(prs)} found)",
+        title_style="bold blue",
+        show_header=True,
+        header_style="bold cyan",
+        box=SIMPLE,
+        expand=False,
+    )
+    
+    # Full columns with enhanced information
+    table.add_column("PR", style="bright_black", no_wrap=True, width=8)
+    table.add_column("Title", style="blue", overflow="ellipsis", max_width=50)
+    table.add_column("Health", justify="center", width=6)
+    table.add_column("Status", justify="center", width=8)
+    table.add_column("CI/CD", justify="center", width=10)
+    table.add_column("Reviews", justify="center", width=10)
+    table.add_column("Author", style="cyan", width=12)
+    table.add_column("Changes", justify="right", width=12)
+    table.add_column("Labels", justify="center", width=8)
+    
+    for pr in prs:
+        # PR number
+        pr_num = f"#{pr.id:06d}"
+        
+        # Title with draft styling
         title = pr.title[:50] + "..." if len(pr.title) > 50 else pr.title
         if pr.is_draft:
             title = Text(title, style="bright_black")
         
-        # Status
+        # Health indicator using border color logic
+        border_color, style_info = get_pr_border_color_and_style(pr)
+        health_indicators = {
+            "green": "●●●",
+            "cyan": "●●○", 
+            "yellow": "●○○",
+            "red": "●××"
+        }
+        health_text = health_indicators.get(border_color, "○○○")
+        health = Text(health_text, style=border_color)
+        
+        # Status with emoji
         open_text, open_color = compute_open_status(pr)
-        status = Text(f"[{open_text}]", style=get_rich_color(open_color))
+        status_icon = "🟢" if open_text == "OPEN" else "🟡" if open_text == "DRFT" else "⚫"
+        status = Text(f"{status_icon} {open_text[:4]}", style=get_rich_color(open_color))
         
-        # Checks
-        checks_summary = _get_checks_summary(pr.checks)
-        checks = Text(checks_summary["text"], style=checks_summary["style"])
+        # CI/CD with enhanced summary (prioritize GitHub Actions if available)
+        github_actions_summary = _get_github_actions_summary(pr)
+        if github_actions_summary:
+            checks = Text(f"{github_actions_summary['emoji']} {github_actions_summary['text'][:8]}", 
+                         style=github_actions_summary["style"])
+        else:
+            checks_summary = _get_checks_summary(pr.checks)
+            check_icon = "✅" if "green" in checks_summary["style"] else "❌" if "red" in checks_summary["style"] else "⏳"
+            checks = Text(f"{check_icon} {checks_summary['text'][:8]}", style=checks_summary["style"])
         
-        # Reviews
+        # Reviews with enhanced summary
         review_summary = _get_review_summary(pr.reviews)
-        reviews = Text(review_summary["text"], style=review_summary["style"])
+        review_icon = "✅" if "green" in review_summary["style"] else "❌" if "red" in review_summary["style"] else "⏳"
+        reviews = Text(f"{review_icon} {review_summary['text'][:8]}", style=review_summary["style"])
         
-        # Author
-        author_color = get_author_color(pr.author)
-        author = Text(pr.author, style=get_rich_color(author_color))
+        # Author with color coding
+        config_username = get("git", "username")
+        author_color, _ = get_author_color(pr.author, config_username)
+        author = Text(pr.author[:12], style=get_rich_color(author_color))
         
-        # Changes
+        # Changes with better formatting
         changes = Text()
         changes.append(f"+{pr.additions}", style="green")
         changes.append("/", style="bright_black")
         changes.append(f"-{pr.deletions}", style="red")
         
-        table.add_row(pr_num, title, status, checks, reviews, author, changes)
+        # Labels count with indicator
+        if pr.labels:
+            label_count = len(pr.labels)
+            label_icon = "🏷️" if label_count > 0 else "⚫"
+            labels = Text(f"{label_icon} {label_count}", style="cyan" if label_count > 0 else "bright_black")
+        else:
+            labels = Text("⚫ 0", style="bright_black")
+        
+        table.add_row(pr_num, title, health, status, checks, reviews, author, changes, labels)
     
     return table
 
 
 def display_prs_table(prs: List[PullRequest], options: Dict):
-    """Display PRs in a table format."""
+    """Display PRs in a table format with enhanced layout support."""
     console = Console()
+    
+    # Handle empty PR list
+    if not prs:
+        empty_table = Table(
+            title="Pull Requests",
+            title_style="bold blue",
+            show_header=False,
+            box=SIMPLE
+        )
+        empty_table.add_column("Message", justify="center")
+        empty_table.add_row(Text("No pull requests found.", style="bright_black"))
+        console.print(empty_table)
+        return
+    
+    # Create and display the table
     table = create_pr_table(prs, options)
     console.print(table)
+    
+    # Add summary information
+    draft_count = sum(1 for pr in prs if pr.is_draft)
+    open_count = len(prs) - draft_count
+    
+    # Add health summary using border logic
+    health_summary = _get_health_summary(prs)
+    
+    summary_text = Text()
+    summary_text.append(f"\nSummary: ", style="bright_black")
+    summary_text.append(f"{open_count} open", style="green" if open_count > 0 else "bright_black")
+    
+    if draft_count > 0:
+        summary_text.append(", ", style="bright_black")
+        summary_text.append(f"{draft_count} draft", style="yellow")
+    
+    summary_text.append(f" • Health: ", style="bright_black")
+    summary_text.append(f"{health_summary['healthy']} healthy", style="green")
+    summary_text.append(", ", style="bright_black")
+    summary_text.append(f"{health_summary['attention']} need attention", style="red" if health_summary['attention'] > 0 else "bright_black")
+    
+    console.print(summary_text)
+
+
+def _get_health_summary(prs: List[PullRequest]) -> Dict[str, int]:
+    """Get health summary statistics for a list of PRs."""
+    healthy_count = 0
+    attention_count = 0
+    
+    for pr in prs:
+        border_color, style_info = get_pr_border_color_and_style(pr)
+        if border_color == "green":
+            healthy_count += 1
+        elif border_color == "red":
+            attention_count += 1
+    
+    return {
+        "healthy": healthy_count,
+        "attention": attention_count,
+        "total": len(prs)
+    }
 
 
 def create_progress_bar(description: str = "Processing...") -> Progress:

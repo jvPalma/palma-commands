@@ -2,6 +2,7 @@ import argparse
 import os
 import sys
 import time
+import warnings
 from datetime import datetime
 
 from prs.config import all_config, get, set
@@ -13,6 +14,102 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
 from rich.syntax import Syntax
+
+# TUI imports (with fallback if textual is not available)
+try:
+    from prs.tui.enhanced_app import run_enhanced_tui
+    TUI_AVAILABLE = True
+except ImportError:
+    TUI_AVAILABLE = False
+
+
+def handle_ci_login():
+    """Handle CI login triggered by --ci-login flag."""
+    console = Console()
+    console.print("[yellow]🔐 CI/CD Provider Authentication[/yellow]")
+    console.print("This feature is not yet implemented.")
+    console.print("Please use 'nprs ci-login' subcommand for provider authentication.")
+
+
+def handle_ci_login_command(args):
+    """Handle CI login subcommand."""
+    console = Console()
+    
+    if args.test:
+        console.print("[cyan]🔍 Testing existing CI/CD authentication...[/cyan]")
+        console.print("[yellow]⚠️  Testing functionality not yet implemented.[/yellow]")
+        return
+    
+    if args.api_key:
+        console.print("[cyan]🔑 Manual API key entry mode[/cyan]")
+        console.print("[yellow]⚠️  Manual API key entry not yet implemented.[/yellow]")
+        return
+    
+    if args.provider:
+        console.print(f"[cyan]🔐 Authenticating with {args.provider.title()}...[/cyan]")
+        _authenticate_provider(args.provider)
+    else:
+        console.print("[cyan]🔐 CI/CD Provider Authentication[/cyan]")
+        console.print("Select a provider:")
+        console.print("  [green]1.[/green] Buildkite")
+        console.print("  [green]2.[/green] GitHub Actions")
+        console.print("  [green]3.[/green] GitLab CI")
+        console.print("  [green]4.[/green] Jenkins")
+        console.print()
+        
+        try:
+            choice = input("Enter choice (1-4): ").strip()
+            providers = {"1": "buildkite", "2": "github", "3": "gitlab", "4": "jenkins"}
+            if choice in providers:
+                _authenticate_provider(providers[choice])
+            else:
+                console.print("[red]❌ Invalid choice.[/red]")
+        except (KeyboardInterrupt, EOFError):
+            console.print("\n[yellow]⏹️  Authentication cancelled.[/yellow]")
+
+
+def _authenticate_provider(provider):
+    """Authenticate with a specific CI/CD provider."""
+    console = Console()
+    
+    provider_configs = {
+        "buildkite": {
+            "name": "Buildkite",
+            "sso_url": "https://buildkite.com/sso",
+            "docs_url": "https://buildkite.com/docs/apis/rest-api#authentication"
+        },
+        "github": {
+            "name": "GitHub Actions",
+            "sso_url": "https://github.com/settings/tokens",
+            "docs_url": "https://docs.github.com/en/rest/authentication"
+        },
+        "gitlab": {
+            "name": "GitLab CI",
+            "sso_url": "https://gitlab.com/-/profile/personal_access_tokens",
+            "docs_url": "https://docs.gitlab.com/ee/api/#authentication"
+        },
+        "jenkins": {
+            "name": "Jenkins",
+            "sso_url": "http://your-jenkins-server/me/configure",
+            "docs_url": "https://www.jenkins.io/doc/book/system-administration/authenticating-scripted-clients/"
+        }
+    }
+    
+    if provider not in provider_configs:
+        console.print(f"[red]❌ Unsupported provider: {provider}[/red]")
+        return
+    
+    config = provider_configs[provider]
+    console.print(f"[cyan]🔐 {config['name']} Authentication[/cyan]")
+    console.print(f"[yellow]⚠️  SSO integration not yet implemented.[/yellow]")
+    console.print(f"For now, please visit: {config['sso_url']}")
+    console.print(f"Documentation: {config['docs_url']}")
+    console.print()
+    console.print("Future functionality will include:")
+    console.print("  • Automatic SSO login flow")
+    console.print("  • Token management")
+    console.print("  • Authentication testing")
+    console.print("  • Provider-specific configuration")
 
 
 def show_chunk_examples():
@@ -115,7 +212,16 @@ nprs clear-history         # Clear cached history"""
 
 def run_cli():
     parser = argparse.ArgumentParser(
-        prog="nprs", description="PRS - Pull Request Status CLI"
+        prog="nprs", 
+        description="PRS - Pull Request Status CLI with Interactive TUI",
+        epilog="""
+Examples:
+  nprs                    # Traditional CLI output
+  nprs --tui              # Launch interactive TUI mode
+  nprs --tui --draft      # TUI with draft PRs included
+  nprs --text --watch 30  # Force CLI mode with watch
+  nprs --ci long --tui    # TUI with detailed CI info
+        """
     )
     # Global arguments for the list command
     parser.add_argument(
@@ -137,12 +243,24 @@ def run_cli():
         help="Set display verbosity for branch",
     )
     parser.add_argument(
-        "--checks",
+        "--ci",
         "-c",
         type=str,
         choices=["none", "short", "normal", "long"],
         default=None,
-        help="Set display verbosity for checks",
+        help="Set display verbosity for CI/CD checks",
+    )
+    parser.add_argument(
+        "--checks",
+        type=str,
+        choices=["none", "short", "normal", "long"],
+        default=None,
+        help="[DEPRECATED] Use --ci instead. Set display verbosity for checks",
+    )
+    parser.add_argument(
+        "--ci-login",
+        action="store_true",
+        help="Trigger CI/CD provider SSO login flow",
     )
     parser.add_argument(
         "--reviews",
@@ -168,6 +286,14 @@ def run_cli():
         help="Set display verbosity for comments",
     )
     parser.add_argument(
+        "--author",
+        "-a",
+        type=str,
+        choices=["none", "short", "normal", "long"],
+        default=None,
+        help="Set display verbosity for author",
+    )
+    parser.add_argument(
         "--watch",
         "-w",
         type=int,
@@ -181,6 +307,16 @@ def run_cli():
         choices=["panels", "table"],
         default="panels",
         help="Display format (default: panels)",
+    )
+    parser.add_argument(
+        "--tui",
+        action="store_true",
+        help="Launch TUI (Terminal User Interface) mode",
+    )
+    parser.add_argument(
+        "--text",
+        action="store_true", 
+        help="Force traditional CLI text output (disable TUI)",
     )
 
     # Subcommands
@@ -234,6 +370,41 @@ def run_cli():
     
     # 'chunk-examples' subcommand
     chunk_examples_parser = subparsers.add_parser("chunk-examples", help="Show examples of chunk-based processing")
+    
+    # 'tui' subcommand
+    tui_parser = subparsers.add_parser("tui", help="Launch TUI (Terminal User Interface) mode")
+    tui_parser.add_argument(
+        "--auto-refresh",
+        type=int,
+        metavar="SECONDS",
+        default=30,
+        help="Auto-refresh interval in seconds (default: 30)"
+    )
+    tui_parser.add_argument(
+        "--theme",
+        choices=["dark", "light", "blue", "high-contrast"],
+        default="dark",
+        help="TUI theme (default: dark)"
+    )
+    
+    # 'ci-login' subcommand
+    ci_login_parser = subparsers.add_parser("ci-login", help="CI/CD provider authentication")
+    ci_login_parser.add_argument(
+        "provider",
+        nargs="?",
+        choices=["buildkite", "github", "gitlab", "jenkins"],
+        help="CI/CD provider to authenticate with (interactive if not specified)"
+    )
+    ci_login_parser.add_argument(
+        "--api-key",
+        action="store_true",
+        help="Manual API key entry mode"
+    )
+    ci_login_parser.add_argument(
+        "--test",
+        action="store_true",
+        help="Test existing authentication"
+    )
 
     args = parser.parse_args()
 
@@ -242,23 +413,83 @@ def run_cli():
         args.command = "list"
 
     if args.command == "list":
+        # Check if TUI mode is requested
+        if hasattr(args, 'tui') and args.tui:
+            try:
+                from prs.tui.app import run_tui_app
+                run_tui_app()
+                return
+            except ImportError as e:
+                console = Console()
+                console.print(f"[red]TUI mode not available: {str(e)}[/red]")
+                console.print("[yellow]Install textual with: pip install textual[/yellow]")
+                return
+            except Exception as e:
+                console = Console()
+                console.print(f"[red]Error launching TUI: {str(e)}[/red]")
+                return
+        
         options = {"include_draft": args.draft}
         if args.pr_url is not None:
             options["pr_url"] = args.pr_url
         if args.branch is not None:
             options["branch"] = args.branch
+        # Handle CI/checks argument with deprecation warning
+        ci_mode = args.ci or args.checks
         if args.checks is not None:
-            options["checks"] = args.checks
+            console = Console()
+            console.print("[yellow]⚠️  Warning: --checks is deprecated. Use --ci instead.[/yellow]")
+        if ci_mode is not None:
+            options["ci"] = ci_mode
         if args.reviews is not None:
             options["reviews"] = args.reviews
         if args.labels is not None:
             options["labels"] = args.labels
         if args.comments is not None:
             options["comments"] = args.comments
+        if args.author is not None:
+            options["author"] = args.author
         
         # Add display format option
         options["format"] = args.format
 
+        # Handle CI login mode
+        if args.ci_login:
+            handle_ci_login()
+            return
+        
+        # Handle TUI mode
+        if args.tui:
+            if not TUI_AVAILABLE:
+                console = Console()
+                console.print("[red]❌ TUI mode is not available.[/red]")
+                console.print("Please install the required dependencies:")
+                console.print("  [cyan]pip install textual[/cyan]")
+                console.print()
+                console.print("Falling back to traditional CLI mode...")
+                console.print()
+            else:
+                try:
+                    watch_interval = args.watch if args.watch else 30
+                    run_enhanced_tui(include_drafts=args.draft, watch_interval=watch_interval)
+                    return
+                except Exception as e:
+                    console = Console()
+                    console.print(f"[red]❌ Failed to start TUI: {e}[/red]")
+                    console.print("Falling back to traditional CLI mode...")
+                    console.print()
+        
+        # Auto-detect TUI mode if not explicitly disabled
+        elif not args.text and TUI_AVAILABLE and not args.watch:
+            # Check if we should auto-launch TUI (interactive terminal, no redirections)
+            if sys.stdout.isatty() and sys.stderr.isatty() and not os.getenv('CI'):
+                try:
+                    console = Console()
+                    console.print("[cyan]💡 TUI mode available! Use --tui to launch interactive interface or --text for traditional output.[/cyan]")
+                    console.print()
+                except Exception:
+                    pass
+        
         # Handle watch mode
         if args.watch is not None:
             interval = args.watch if args.watch > 0 else 10
@@ -378,6 +609,33 @@ def run_cli():
         clear_pr_history({})
     elif args.command == "chunk-examples":
         show_chunk_examples()
+    elif args.command == "tui":
+        try:
+            from prs.tui.app import PRSApp
+            
+            # Create app with options
+            app = PRSApp()
+            
+            # Apply theme if specified
+            if hasattr(args, 'theme') and args.theme != "dark":
+                app.add_class(f"-{args.theme}")
+            
+            # Set auto-refresh interval
+            if hasattr(args, 'auto_refresh'):
+                app.refresh_interval = args.auto_refresh
+            
+            # Run the app
+            app.run()
+            
+        except ImportError as e:
+            console = Console()
+            console.print(f"[red]TUI mode not available: {str(e)}[/red]")
+            console.print("[yellow]Install textual with: pip install textual[/yellow]")
+        except Exception as e:
+            console = Console()
+            console.print(f"[red]Error launching TUI: {str(e)}[/red]")
+    elif args.command == "ci-login":
+        handle_ci_login_command(args)
 
 
 if __name__ == "__main__":
