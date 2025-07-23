@@ -1,4 +1,4 @@
-from prs.config import get
+from prs.config import get, get_ignored_prs
 from prs.core.author.helpers import get_author
 from prs.core.checks.helpers import get_checks
 from prs.core.labels.helpers import get_labels
@@ -35,9 +35,14 @@ def list_pull_requests(options: dict):
     # Sort PRs by PR number (ascending: oldest first, latest last)
     all_prs.sort(key=lambda pr: pr.id)
 
+    # Filter out ignored PRs
+    ignored_pr_numbers = get_ignored_prs()
+    filtered_prs = [pr for pr in all_prs if pr.id not in ignored_pr_numbers]
+    ignored_count = len(all_prs) - len(filtered_prs)
+
     ob = OutputBuilder()
 
-    for pr in all_prs:
+    for pr in filtered_prs:
         # Format PR number to always occupy 6 characters with leading zeros.
         pr_number = color_text(f"#{pr.id:06d}", "gray-4")
         # Format title to 70 characters; if PR is draft, color it gray-4; otherwise blue.
@@ -100,5 +105,10 @@ def list_pull_requests(options: dict):
             ob.add_line("        Labels: " + labels_text)
 
         ob.add_line("")  # Blank line between PRs
+
+    # Add ignored count at the end if there are ignored PRs
+    if ignored_count > 0:
+        ignored_msg = color_text(f"# ignored: {ignored_count}", "gray-4")
+        ob.add_line(ignored_msg)
 
     print(ob.get_output())

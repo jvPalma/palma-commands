@@ -1,7 +1,7 @@
 import argparse
 import sys
 
-from prs.config import all_config, get, set
+from prs.config import all_config, get, set, get_ignored_prs, set_ignored_prs
 from prs.core.usecases import list_pull_requests
 
 
@@ -53,15 +53,24 @@ def run_cli():
         help="Set display verbosity for labels",
     )
 
-    # Subcommands
+    #! Subcommands
     subparsers = parser.add_subparsers(dest="command")
 
-    # 'config' subcommand
+    #! 'config' subcommand
     config_parser = subparsers.add_parser("config", help="Get or set configuration")
     config_parser.add_argument("action", choices=["get", "set", "all"])
     config_parser.add_argument("key", nargs="?", help="Ex: git.username")
     config_parser.add_argument(
         "value", nargs="?", help="Value to set (used with 'set')"
+    )
+
+    #! 'ignore' subcommand
+    ignore_parser = subparsers.add_parser("ignore", help="Ignore PRs by number")
+    ignore_parser.add_argument(
+        "pr_numbers", 
+        nargs="+", 
+        type=int,
+        help="PR numbers to ignore (ex: 1234 1235 1236)"
     )
 
     args = parser.parse_args()
@@ -104,6 +113,15 @@ def run_cli():
                 for key, value in items.items():
                     print(f"{key} = {value}")
                 print()
+    elif args.command == "ignore":
+        # Get current ignored PRs and add new ones
+        current_ignored = get_ignored_prs()
+        combined = current_ignored + args.pr_numbers
+        new_ignored = list(dict.fromkeys(combined))  # Remove duplicates while preserving order
+        new_ignored.sort()  # Keep them sorted
+        
+        set_ignored_prs(new_ignored)
+        print(f"Ignored PRs updated: {', '.join(map(str, new_ignored))}")
 
 
 if __name__ == "__main__":
