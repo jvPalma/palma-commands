@@ -31,6 +31,7 @@ def resolve_display_modes(options: dict) -> dict:
         "labels": options.get("labels", get("pr-info", "labels", fallback="short")),
         "pr_url": options.get("pr_url", get("pr-info", "pr_url", fallback="normal")),
         "branch": options.get("branch", get("pr-info", "branch", fallback="normal")),
+        "lines": options.get("lines", 5),
     }
 
 

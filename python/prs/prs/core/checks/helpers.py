@@ -21,12 +21,16 @@ def analyze_checks(pr: PullRequest):
         context = check.get("context", "")
         if state:
             total += 1
+            stateIcon = ''
             if state == "SUCCESS":
                 success_count += 1
+                stateIcon = "✅"
             elif state in ["FAILURE", "FAILED"]:
                 failing_count += 1
+                stateIcon = "❌"
             elif state == "PENDING":
                 pending_count += 1
+                stateIcon = "🟠"
             if state and context:
                 if state in ["FAILURE", "FAILED"]:
                     color = "red"
@@ -34,7 +38,7 @@ def analyze_checks(pr: PullRequest):
                     color = "yellow"
                 else:
                     color = "green"
-                details.append((state, context, color))
+                details.append((state, context, color, stateIcon))
     return total, success_count, pending_count, failing_count, details
 
 
@@ -82,8 +86,8 @@ def get_checks(pr: PullRequest, mode: str):
         if details:
             return "\n\t\t".join(
                 [
-                    f"{color_text(state.ljust(14), color)} {context}"
-                    for state, context, color in details
+                    f"{stateIcon} {color_text(context, color)}"
+                    for state, context, color, stateIcon in details
                 ]
             )
         else:

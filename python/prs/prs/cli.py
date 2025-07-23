@@ -135,6 +135,12 @@ Verbosity levels: {color_text('none', 'gray-4')} (hide), {color_text('short', 'g
         default=None,
         help="Show PR labels",
     )
+    parser.add_argument(
+        "--lines",
+        type=int,
+        default=5,
+        help="Number of lines to show in long mode (default: 5)",
+    )
 
     #! Subcommands
     subparsers = parser.add_subparsers(dest="command")
@@ -169,7 +175,7 @@ Verbosity levels: {color_text('none', 'gray-4')} (hide), {color_text('short', 'g
         args.command = "list"
 
     if args.command == "list":
-        options = {"include_draft": args.draft}
+        options = {"include_draft": args.draft, "lines": args.lines}
         if args.pr_url is not None:
             options["pr_url"] = args.pr_url
         if args.branch is not None:
