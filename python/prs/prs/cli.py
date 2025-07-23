@@ -1,7 +1,9 @@
 import argparse
+import os
+import subprocess
 import sys
 
-from prs.config import all_config, get, set, get_ignored_prs, set_ignored_prs
+from prs.config import all_config, get, set, get_ignored_prs, set_ignored_prs, CONFIG_PATH
 from prs.core.usecases import list_pull_requests
 
 
@@ -57,8 +59,8 @@ def run_cli():
     subparsers = parser.add_subparsers(dest="command")
 
     #! 'config' subcommand
-    config_parser = subparsers.add_parser("config", help="Get or set configuration")
-    config_parser.add_argument("action", choices=["get", "set", "all"])
+    config_parser = subparsers.add_parser("config", help="Get, set, view all, or open configuration")
+    config_parser.add_argument("action", choices=["get", "set", "all", "open"])
     config_parser.add_argument("key", nargs="?", help="Ex: git.username")
     config_parser.add_argument(
         "value", nargs="?", help="Value to set (used with 'set')"
@@ -113,6 +115,23 @@ def run_cli():
                 for key, value in items.items():
                     print(f"{key} = {value}")
                 print()
+        elif args.action == "open":
+            # Get the editor from environment variable
+            editor = os.environ.get("EDITOR")
+            if not editor:
+                print("Error: $EDITOR environment variable is not set.")
+                print("Please set your preferred editor: export EDITOR=nano")
+                sys.exit(1)
+            
+            try:
+                # Open the config file with the user's preferred editor
+                subprocess.run([editor, str(CONFIG_PATH)], check=True)
+            except subprocess.CalledProcessError:
+                print(f"Error: Failed to open config file with '{editor}'")
+                sys.exit(1)
+            except FileNotFoundError:
+                print(f"Error: Editor '{editor}' not found. Please check your $EDITOR setting.")
+                sys.exit(1)
     elif args.command == "ignore":
         # Get current ignored PRs and add new ones
         current_ignored = get_ignored_prs()
