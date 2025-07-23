@@ -5,69 +5,156 @@ import sys
 
 from prs.config import all_config, get, set, get_ignored_prs, set_ignored_prs, CONFIG_PATH
 from prs.core.usecases import list_pull_requests
+from prs.utils.formatting import color_text
+
+# Version constant (should match setup.py)
+__version__ = "1.0.0"
+
+class ColoredHelpFormatter(argparse.RawDescriptionHelpFormatter):
+    """Custom help formatter with colors and concise formatting."""
+    
+    def _format_action_invocation(self, action):
+        """Format option strings with cyan color in a fixed 15-char width."""
+        if not action.option_strings:
+            # Positional arguments - make them green
+            metavar, = self._metavar_formatter(action, action.dest)(1)
+            return color_text(metavar, "green")
+        else:
+            # Build the option string (short + long)
+            option_text = ", ".join(action.option_strings)
+            
+            # Create the colored version but measure the uncolored length
+            colored_options = ", ".join([color_text(opt, "yellow") for opt in action.option_strings])
+            
+            # Pad to 15 characters (using the uncolored length for measurement)
+            padding_needed = 15 - len(option_text)
+            if padding_needed > 0:
+                padded_options = colored_options + " " * padding_needed
+            else:
+                padded_options = colored_options
+            
+            # Add the argument specification if this action takes arguments
+            if action.nargs != 0:
+                args_string = self._format_args(action, self._get_default_metavar_for_optional(action))
+                # Custom formatting for choices to add spaces
+                if hasattr(action, 'choices') and action.choices:
+                    args_string = "{ " + ", ".join(str(color_text(choice, "cyan")) for choice in action.choices) + " }"
+                return f"{padded_options}{args_string}"
+            else:
+                return padded_options
+    
+    def _format_args(self, action, default_metavar):
+        """Custom args formatting with better choice display."""
+        get_metavar = self._metavar_formatter(action, default_metavar)
+        result = get_metavar(1)[0]
+        
+        # Custom formatting for choices to add spaces
+        if hasattr(action, 'choices') and action.choices:
+            result = "{ " + ", ".join(str(color_text(choice, "cyan")) for choice in action.choices) + " }"
+
+        return result
+    
+    def _format_usage(self, usage, actions, groups, prefix):
+        """Format usage line with colors."""
+        if prefix is None:
+            prefix = "usage: "
+        
+        # Get the standard usage formatting
+        usage_text = super()._format_usage(usage, actions, groups, prefix)
+        
+        # Color the program name green
+        lines = usage_text.split('\n')
+        if lines:
+            first_line = lines[0]
+            if first_line.startswith("usage: "):
+                prog_part = first_line[7:].split()[0]  # Extract program name
+                colored_line = first_line.replace(prog_part, color_text(prog_part, "green"), 1)
+                lines[0] = colored_line
+        
+        return '\n'.join(lines)
 
 
 def run_cli():
     parser = argparse.ArgumentParser(
-        prog="nprs", description="PRS - Pull Request Status CLI"
+        prog="nprs", 
+        description=f"""
+{color_text('PRS', 'green')} - Pull Request Status CLI
+
+Display PRs with customizable verbosity.
+Supports {color_text('ignoring', 'cyan')} specific PRs and {color_text('config management', 'cyan')}.
+Verbosity levels: {color_text('none', 'gray-4')} (hide), {color_text('short', 'gray-4')} (badges), {color_text('normal', 'gray-4')} (summary), {color_text('long', 'gray-4')} (detailed)
+""",
+        formatter_class=ColoredHelpFormatter
+    )
+    # Version argument
+    parser.add_argument(
+        "-v", "--version", 
+        action="version", 
+        version=f"{color_text('PRS', 'green')} v{color_text(__version__, 'cyan')} - Pull Request Status CLI"
     )
     # Global arguments for the list command
     parser.add_argument(
-        "--draft", "-d", action="store_true", default=False, help="Include draft PRs"
+         "-d", "--draft",action="store_true", default=False, help="Include draft PRs"
     )
     parser.add_argument(
         "--pr_url",
         type=str,
         choices=["none", "short", "normal", "long"],
         default=None,
-        help="Set display verbosity for PR URL",
+        help="Show PR URLs",
     )
     parser.add_argument(
-        "--branch",
         "-b",
+        "--branch",
         type=str,
         choices=["none", "short", "normal", "long"],
         default=None,
-        help="Set display verbosity for branch",
+        help="Show branch names",
     )
     parser.add_argument(
-        "--checks",
         "-c",
+        "--checks",
         type=str,
         choices=["none", "short", "normal", "long"],
         default=None,
-        help="Set display verbosity for checks",
+        help="Show CI/CD checks",
     )
     parser.add_argument(
-        "--reviews",
         "-r",
+        "--reviews",
         type=str,
         choices=["none", "short", "normal", "long"],
         default=None,
-        help="Set display verbosity for reviews",
+        help="Show review status",
     )
     parser.add_argument(
-        "--labels",
         "-l",
+        "--labels",
         type=str,
         choices=["none", "short", "normal", "long"],
         default=None,
-        help="Set display verbosity for labels",
+        help="Show PR labels",
     )
 
     #! Subcommands
     subparsers = parser.add_subparsers(dest="command")
 
-    #! 'config' subcommand
-    config_parser = subparsers.add_parser("config", help="Get, set, view all, or open configuration")
+    #! 'config' subcommand  
+    config_parser = subparsers.add_parser(
+        "config", 
+        help=f"Manage configuration: {color_text('get', 'cyan')}, {color_text('set', 'cyan')}, {color_text('all', 'cyan')}, {color_text('open', 'cyan')} {color_text('(NEW!)', 'green')}"
+    )
     config_parser.add_argument("action", choices=["get", "set", "all", "open"])
-    config_parser.add_argument("key", nargs="?", help="Ex: git.username")
+    config_parser.add_argument("key", nargs="?", help="Config key (ex: git.username)")
     config_parser.add_argument(
-        "value", nargs="?", help="Value to set (used with 'set')"
+        "value", nargs="?", help="Value to set (for 'set' action)"
     )
 
     #! 'ignore' subcommand
-    ignore_parser = subparsers.add_parser("ignore", help="Ignore PRs by number")
+    ignore_parser = subparsers.add_parser(
+        "ignore", 
+        help=f"{color_text('NEW!', 'green')} Ignore specific PRs from display"
+    )
     ignore_parser.add_argument(
         "pr_numbers", 
         nargs="+", 
