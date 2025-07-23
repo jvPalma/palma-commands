@@ -24,15 +24,15 @@ def pr_info_to_model(pr_json: dict) -> PullRequest:
     labels = [lbl.get("name", "") for lbl in pr_json.get("labels", [])]
     
 
-    printer = pprint.PrettyPrinter(indent=4)
-    print("\n\ndetails for PR #", pr_id, ":")
-    print("\nReviews:")
-    printer.pprint(reviews_raw)
+    # printer = pprint.PrettyPrinter(indent=4)
+    # print("\n\ndetails for PR #", pr_id, ":")
+    # print("\nReviews:")
+    # printer.pprint(reviews_raw)
 
-    print("\nReview Requests:")
-    printer.pprint(reviewRequests_raw)
+    # print("\nReview Requests:")
+    # printer.pprint(reviewRequests_raw)
 
-    print("\n")
+    # print("\n")
 
     return PullRequest(
         id=pr_id,

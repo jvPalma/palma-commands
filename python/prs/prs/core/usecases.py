@@ -32,6 +32,9 @@ def list_pull_requests(options: dict):
         pr_model.isDraft = is_draft
         all_prs.append(pr_model)
 
+    # Sort PRs by PR number (ascending: oldest first, latest last)
+    all_prs.sort(key=lambda pr: pr.id)
+
     ob = OutputBuilder()
 
     for pr in all_prs:
