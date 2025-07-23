@@ -88,4 +88,4 @@ def get_panel_color(pr) -> str:
 
 
 # Display constants
-MAX_TITLE_LENGTH = 70
+MAX_TITLE_LENGTH = 90
