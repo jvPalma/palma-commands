@@ -4,7 +4,7 @@ import subprocess
 import sys
 
 from prs.config import all_config, get, set, get_ignored_prs, set_ignored_prs, CONFIG_PATH
-from prs.core.usecases import list_pull_requests
+from prs.core.printPullRequests import list_pull_requests
 from prs.utils.formatting import color_text
 
 # Version constant (should match setup.py)

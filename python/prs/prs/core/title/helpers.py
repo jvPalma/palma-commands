@@ -10,4 +10,4 @@ def format_title(title: str) -> str:
     if len(title) > 70:
         return title[:67] + "..."
     else:
-        return title.ljust(70)
+        return title
