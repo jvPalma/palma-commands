@@ -25,6 +25,7 @@ def resolve_display_modes(options: dict) -> dict:
     """
     return {
         "include_drafts": options.get("include_draft", False),
+        "no_reviewer": options.get("no_reviewer", False),
         "author": options.get("author", get("pr-info", "author", fallback="short")),
         "checks": options.get("checks", get("pr-info", "checks", fallback="short")),
         "reviews": options.get("reviews", get("pr-info", "reviews", fallback="short")),

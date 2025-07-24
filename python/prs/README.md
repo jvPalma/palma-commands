@@ -37,13 +37,13 @@ PRS is a command-line utility to inspect your GitHub pull requests. It shows ope
 You can run PRS either by invoking Python directly or by using the standalone executable:
 
 - **Directly via Python:**
-  
+
   ```bash
   python -m prs.main [options]
   ```
-  
+
 - **Using the Standalone Executable:**
-  
+
   ```bash
   ./prs [options]
   ```
@@ -51,6 +51,7 @@ You can run PRS either by invoking Python directly or by using the standalone ex
 ### CLI Options
 
 Global options:
+
 - `-d`, `--draft`  
   Include draft PRs.
 - `-c`, `--checks`  
@@ -65,6 +66,7 @@ Global options:
   Set display verbosity for branch: `none`, `short`, `normal`, or `long`.
 
 Subcommands:
+
 - `config`  
   Get or set configuration values.
   - Example: `prs config set git.username your_username`
@@ -75,6 +77,7 @@ Subcommands:
 A configuration file (`~/.prsconfig`) is automatically created if it does not exist. It includes sections such as `[git]`, `[git-org]`, `[vctool]`, and `[pr-info]`. Edit it to set default verbosity levels and other preferences.
 
 Example configuration:
+
 ```ini
 [git]
 repo_name = your-repo
@@ -118,7 +121,6 @@ nprs config set pr-info.reviews "short" #   `none` | `short` | `normal` | `long`
 nprs config set pr-info.labels "short" #    `none` | `short` | `normal` | `long`
 ```
 
-
 ## Installation and Building
 
 1. **Clone the Repository:**
@@ -138,9 +140,11 @@ nprs config set pr-info.labels "short" #    `none` | `short` | `normal` | `long`
 3. **Install Dependencies:**
 
    If you have a `requirements.txt` file, run:
+
    ```bash
    pip install -r requirements.txt
    ```
+
    Otherwise, ensure you have the required packages installed.
 
 4. **Build a Standalone Executable with PyInstaller:**
@@ -148,6 +152,7 @@ nprs config set pr-info.labels "short" #    `none` | `short` | `normal` | `long`
    ```bash
    pyinstaller --onefile --name prs prs/main.py
    ```
+
    The executable will be created in the `dist/` directory.
 
 5. **Test the Executable:**
@@ -156,6 +161,7 @@ nprs config set pr-info.labels "short" #    `none` | `short` | `normal` | `long`
    cd dist
    ./prs --help
    ```
+
    You should see the help message for the tool.
 
 ### Standalone Installation
@@ -168,6 +174,8 @@ To install the executable system-wide so you can run it from anywhere:
 
    ```bash
    sudo cp dist/prs /usr/local/bin/prs
+   # or
+   ./install.sh
    ```
 
 3. **Test from Anywhere:**

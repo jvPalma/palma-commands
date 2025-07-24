@@ -47,9 +47,9 @@ from prs.core.display.feature_renderers import (
 
 # Character limits for LONG mode columns
 FEATURE_CHARACTER_LIMITS = {
-    "Checks": 60,
-    "Reviews": 35,
-    "Labels": 30
+    "Checks": 80,
+    "Reviews": 25,
+    "Labels": 25
 }
 
 
@@ -112,6 +112,8 @@ def create_panel_subtitle(pr, modes: dict) -> Text or None:
     subtitle_text = Text()
     subtitle_text.append(pr.url, style="cyan")
     return subtitle_text
+
+
 
 
 def truncate_rich_text(text: Text, max_chars: int) -> Text:
@@ -276,7 +278,10 @@ def render_pr_panel(pr, modes: dict, console: Console) -> None:
         console: Rich console for output
     """
     panel_title = create_panel_title(pr)
+    
+    # Always show URL in panel subtitle (bottom left)
     panel_subtitle = create_panel_subtitle(pr, modes)
+    
     panel_content = assemble_panel_content(pr, modes, console)
     panel_color = get_panel_color(pr)
     
@@ -286,13 +291,13 @@ def render_pr_panel(pr, modes: dict, console: Console) -> None:
         subtitle=panel_subtitle,
         border_style=panel_color,
         title_align="left",
-        subtitle_align="left",
+        subtitle_align="left",  # Always left-align URL
         padding=(0, 1),  # Remove all padding for compact layout
         expand=True
     )
     console.print(panel)
     
-    # Branch information (if not "none") - displayed after panel without extra empty lines
+    # Branch information with author for reviewer PRs - displayed after panel
     branch_text = render_branch_info(pr, modes["branch"])
     if branch_text:
         console.print(branch_text)
@@ -405,7 +410,75 @@ def collect_long_items(pr, modes: dict) -> List[Tuple[str, Text]]:
     return long_items
 
 
-def calculate_dynamic_widths(console_width: int, has_normal: bool, num_long: int) -> Tuple[int, int, int, int]:
+def _distribute_long_widths(available_width: int, num_long: int, long_items: List[Tuple[str, Text]] = None) -> Tuple[int, int, int, int]:
+    """
+    Distribute width among long columns with special handling for checks column.
+    
+    The checks column gets 30% more space than other long columns when present.
+    
+    Args:
+        available_width: Total width to distribute among long columns
+        num_long: Number of long columns (1-3)
+        long_items: List of (header, content) tuples to identify column types
+        
+    Returns:
+        Tuple of (normal_width, long1_width, long2_width, long3_width)
+        normal_width is always 0 since this only distributes long column widths
+    """
+    if available_width <= 0 or num_long <= 0:
+        return (0, 0, 0, 0)
+    
+    # Initialize widths
+    widths = [0, 0, 0, 0]  # normal, long1, long2, long3
+    
+    # Identify which columns are checks columns
+    checks_positions = []
+    if long_items:
+        for i, (header, _) in enumerate(long_items[:3]):  # Max 3 long columns
+            if header == "Checks":
+                checks_positions.append(i + 1)  # +1 because index 0 is normal column
+    
+    if not checks_positions:
+        # No checks column - distribute evenly
+        base_width = available_width // num_long
+        remainder = available_width % num_long
+        
+        for i in range(min(num_long, 3)):
+            widths[i + 1] = base_width + (1 if i < remainder else 0)
+    else:
+        # Checks column gets 30% more space
+        # Calculate total "units" where checks = 1.3 units, others = 1.0 unit each
+        checks_count = len(checks_positions)
+        other_count = num_long - checks_count
+        total_units = (checks_count * 1.3) + (other_count * 1.0)
+        
+        # Calculate base unit width
+        unit_width = available_width / total_units
+        
+        # Assign widths based on column type
+        for i in range(min(num_long, 3)):
+            if (i + 1) in checks_positions:
+                # Checks column gets 1.3x the base unit (30% more)
+                widths[i + 1] = int(unit_width * 1.3)
+            else:
+                # Other columns get 1.0x the base unit
+                widths[i + 1] = int(unit_width)
+        
+        # Handle rounding by adjusting the largest column
+        total_assigned = sum(widths[1:4])
+        if total_assigned != available_width:
+            diff = available_width - total_assigned
+            # Add difference to the largest column
+            max_idx = 1
+            for i in range(2, 4):
+                if widths[i] > widths[max_idx]:
+                    max_idx = i
+            widths[max_idx] += diff
+    
+    return tuple(widths)
+
+
+def calculate_dynamic_widths(console_width: int, has_normal: bool, num_long: int, long_items: List[Tuple[str, Text]] = None) -> Tuple[int, int, int, int]:
     """
     Calculate optimal column widths based on content scenarios and console width.
     
@@ -415,11 +488,13 @@ def calculate_dynamic_widths(console_width: int, has_normal: bool, num_long: int
     - Multiple columns scenario: NORMAL 40-50% range, distribute rest among LONG columns
     - Always respect NORMAL column min 40%, max 50% constraints for multi-column scenarios
     - Handle edge cases: narrow terminals, very wide displays
+    - SPECIAL: Checks column gets 30% more space than other LONG columns when present
     
     Args:
         console_width: Available console width in characters
         has_normal: Whether NORMAL column content exists
         num_long: Number of LONG columns needed (0-3)
+        long_items: List of (header, content) tuples to identify column types (for checks spacing)
         
     Returns:
         Tuple of (normal_width, long1_width, long2_width, long3_width)
@@ -430,7 +505,7 @@ def calculate_dynamic_widths(console_width: int, has_normal: bool, num_long: int
     2. Handle NORMAL-only scenario (100% width)
     3. Handle 1 NORMAL + 1 LONG scenario (60%/40% split with constraints)
     4. Handle multiple columns with NORMAL 40-50% range
-    5. Distribute remaining width evenly among LONG columns
+    5. Distribute remaining width among LONG columns with checks column getting 20% more space
     6. Apply edge case handling for very narrow/wide terminals
     """
     # Input validation and edge case handling
@@ -451,16 +526,7 @@ def calculate_dynamic_widths(console_width: int, has_normal: bool, num_long: int
     
     # SCENARIO 2: No NORMAL column (LONG columns only)
     if not has_normal and num_long > 0:
-        # Distribute width evenly among LONG columns
-        long_width = console_width // num_long
-        remainder = console_width % num_long
-        
-        # Distribute remainder to first columns
-        widths = [0, 0, 0, 0]  # normal, long1, long2, long3
-        for i in range(min(num_long, 3)):
-            widths[i + 1] = long_width + (1 if i < remainder else 0)
-        
-        return tuple(widths)
+        return _distribute_long_widths(console_width, num_long, long_items)
     
     # SCENARIO 3: 1 NORMAL + 1 LONG
     if has_normal and num_long == 1:
@@ -474,8 +540,11 @@ def calculate_dynamic_widths(console_width: int, has_normal: bool, num_long: int
         else:
             normal_width = max_normal_width
         
-        long_width = console_width - normal_width
-        return (normal_width, long_width, 0, 0)
+        # Distribute remaining width to single long column
+        remaining_width = console_width - normal_width
+        long_widths = _distribute_long_widths(remaining_width, 1, long_items)
+        
+        return (normal_width, long_widths[1], 0, 0)
     
     # SCENARIO 4: Multiple columns (NORMAL + 2 or 3 LONG)
     if has_normal and num_long >= 2:
@@ -505,15 +574,10 @@ def calculate_dynamic_widths(console_width: int, has_normal: bool, num_long: int
         
         # Distribute remaining width among LONG columns
         remaining_width = console_width - normal_width
-        long_width = remaining_width // num_long
-        remainder = remaining_width % num_long
+        long_widths = _distribute_long_widths(remaining_width, num_long, long_items)
         
-        # Build return tuple with remainder distributed to first columns
-        widths = [normal_width, 0, 0, 0]
-        for i in range(min(num_long, 3)):
-            widths[i + 1] = long_width + (1 if i < remainder else 0)
-        
-        return tuple(widths)
+        # Combine normal width with long widths
+        return (normal_width, long_widths[1], long_widths[2], long_widths[3])
     
     # Fallback: should not reach here with valid inputs
     # Return equal distribution as safety measure
@@ -557,7 +621,7 @@ def create_table_layout(normal_items: List[Text], long_items: List[Tuple[str, Te
     
     # Calculate dynamic widths using the width calculation engine
     normal_width, long1_width, long2_width, long3_width = calculate_dynamic_widths(
-        console_width, has_normal, num_long
+        console_width, has_normal, num_long, long_items
     )
     
     # Validation: ensure widths sum to console_width

@@ -71,7 +71,7 @@ def render_summary_status(pr, modes: dict) -> Text:
         render_labels_badge(pr, summary_text)
 
     # AUTHOR
-    summary_text.append(get_author(pr, modes["author"]), style="white")
+    # summary_text.append(get_author(pr, modes["author"]), style="white")
 
     return summary_text
 
@@ -230,7 +230,7 @@ def render_url_info(pr, mode: str) -> Text or None:
 
 def render_branch_info(pr, mode: str) -> Text or None:
     """
-    Render branch information if mode is not 'none'.
+    Render branch information with author name for reviewer PRs.
     
     Args:
         pr: Pull request model object
@@ -241,9 +241,21 @@ def render_branch_info(pr, mode: str) -> Text or None:
     """
     if mode == "none":
         return None
+    
+    from prs.utils.username_colors import get_username_color
+    from prs.config import get
         
     branch_text = Text()
     branch_text.append(" ")
+    
+    # If it's a reviewer PR (user is not the author), show author name with consistent color
+    if hasattr(pr, 'role') and pr.role in ['reviewer_pending', 'reviewer_completed', 'both_pending', 'both_completed'] and pr.role != 'author':
+        # Get consistent color for this author
+        config_username = get("git", "username", fallback="")
+        author_color, author_bg = get_username_color(pr.author, config_username)
+        color_style = author_color if not author_bg else f"{author_color} on {author_bg}"
+        branch_text.append(pr.author, style=color_style)
+        branch_text.append(" \t ")  # Tab separator as requested
     
     # Create clickable link for branch checkout
     # This creates a hyperlink that can be clicked in supported terminals

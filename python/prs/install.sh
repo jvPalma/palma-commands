@@ -5,7 +5,6 @@ BINARY="$DIR/dist/prs"
 
 # Define candidate directories (in order of preference).
 candidates=(
-  "/home/user/.local/bin"
   "$HOME/.local/bin"
   "/usr/local/bin"
   "/usr/bin"
@@ -39,9 +38,9 @@ fi
 echo "Copying binary to $destination"
 # Check if the destination directory is writable.
 if [ -w "$(dirname "$destination")" ]; then
-    cp "$BINARY" "$destination"
+    cp -f "$BINARY" "$destination"
 else
-    sudo cp "$BINARY" "$destination"
+    sudo cp -f "$BINARY" "$destination"
 fi
 
 echo "Installation complete. You can now run 'prs' from anywhere."
