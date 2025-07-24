@@ -2,11 +2,16 @@ from setuptools import find_packages, setup
 
 setup(
     name="prs",
-    version="0.1.0",
+    version="1.0.0",
     packages=find_packages(),
+    install_requires=[
+        # Rich library for enhanced terminal formatting and panels
+        "rich>=13.0.0",
+    ],
     entry_points={
         "console_scripts": [
-            # "nprs=prs.main:main",
+            # Maps the 'nprs' command to the main function in prs.main module
+            # When installed, users can run 'nprs' from the command line
             "nprs=prs.main:main",
         ],
     },

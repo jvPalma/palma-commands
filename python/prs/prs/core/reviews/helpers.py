@@ -21,10 +21,12 @@ def analyze_reviews(pr: PullRequest):
     seen_authors = set()
     for review in pr.reviews:
         author = review.get("author")
+        # Extract author login from the author dict
+        author_login = author.get("login") if author else None
         # Skip duplicate authors
-        if author in seen_authors:
+        if author_login in seen_authors:
             continue
-        seen_authors.add(author)
+        seen_authors.add(author_login)
         state = review.get("state", "N/A").upper()
         total += 1
         if state == "APPROVED":
@@ -37,7 +39,7 @@ def analyze_reviews(pr: PullRequest):
             color = "green"
         else:
             color = "red"
-        details.append((state, author, color))
+        details.append((state, author_login, color))
     if total == 0:
         summary = "N/A"
     elif approved:

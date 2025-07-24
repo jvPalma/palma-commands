@@ -2,13 +2,11 @@ from prs.core.models import PullRequest
 from prs.utils.formatting import color_text
 
 # Define the label category lists
-DANG_LIST = ["skip-ci", "conflict", "do-not-merge", "no-reviewers"]
-WARN_LIST = ["force-ci", "ignore-fe-cache", "skip-second-review"]
+DANG_LIST = ["skip-ci", "conflict", "do-not-merge"]
+WARN_LIST = ["ignore-fe-cache", "skip-second-review"]
 GOOD_LIST = [
     "ready-after-ci",
     "ready-to-merge",
-    "deploy-pr-backoffice",
-    "deploy-pr-frontoffice",
 ]
 
 
@@ -20,20 +18,28 @@ def analyze_labels(pr: PullRequest):
       - "red" if the label is in DANG_LIST
       - "yellow" if the label is in WARN_LIST
       - "green" if the label is in GOOD_LIST
-      - "brblack" otherwise.
+      - "grey42" otherwise.
     """
-    details = []
+    # create multiple lists to categorize labels
+    # and in the end, return all of the lists as one, starting with the DANG_LIST
+    # then WARN_LIST, GOOD_LIST, ending with the neutral labels
+    errorList = []
+    warnList = []
+    goodList = []
+    neutralList = []
+
     for label in pr.labels:
         if label in DANG_LIST:
-            color = "brred"
+            errorList.append((label, "red1"))
         elif label in WARN_LIST:
-            color = "yellow"
+            warnList.append((label, "yellow"))
         elif label in GOOD_LIST:
-            color = "green"
+            goodList.append((label, "green"))
         else:
-            color = "brblack"
-        details.append((label, color))
-    return details
+            neutralList.append((label, "grey42"))
+
+    # Return all categorized labels as a single list
+    return errorList + goodList + warnList + neutralList
 
 
 def get_labels(pr: PullRequest, mode: str) -> str:
@@ -45,7 +51,7 @@ def get_labels(pr: PullRequest, mode: str) -> str:
       - "short" or "normal": returns a comma-separated list of colored labels.
       - "long": returns each colored label on its own line (with indent).
 
-    If there are no labels, returns a message in "brblack" color.
+    If there are no labels, returns a message in "grey42" color.
 
     Raises:
       ValueError: if an unknown mode is provided.
@@ -55,19 +61,19 @@ def get_labels(pr: PullRequest, mode: str) -> str:
     details = analyze_labels(pr)
 
     if not details:
-        result = color_text("No relevant labels to show", "brblack")
+        result = color_text("No relevant labels to show", "grey42")
     else:
         if mode == "short":
             if not details:
-                return color_text("[LABL]", "brblack")
+                return color_text("Label", "grey42")
             label, color = details[0]
-            return color_text("[LABL]", color)
+            return color_text("Label", color)
         elif mode == "normal":
             result = ", ".join(
                 [
                     color_text(label, color)
                     for label, color in details
-                    if color != "brblack"
+                    if color != "grey42"
                 ]
             )
         elif mode == "long":

@@ -1,5 +1,7 @@
 # prs/utils/formatting.py
 
+from rich.text import Text
+
 ANSI_CODES = {
     "reset": "\033[0m",  # color is: default
     "black": "\033[30m",  # color is: #000000
@@ -78,6 +80,62 @@ def color_text(text: str, color: str) -> str:
     If the color is not found, return the original text.
     """
     return f"{ANSI_CODES.get(color, '')}{text}{ANSI_CODES['reset']}"
+
+def success(text: str, truncateCharSize: int = 9999) -> Text:
+    icon = "✅"
+    full_text = f"{icon} {text}" if text else icon
+    newText = Text(full_text, style="green3")
+    if len(newText.plain) > truncateCharSize:
+        newText.truncate(truncateCharSize)
+    return newText
+
+def error(text: str, truncateCharSize: int = 9999) -> Text:
+    icon = "❌"
+    full_text = f"{icon} {text}" if text else icon
+    newText = Text(full_text, style="red1")
+    if len(newText.plain) > truncateCharSize:
+        newText.truncate(truncateCharSize)
+    return newText
+    
+def warning(text: str, truncateCharSize: int = 9999) -> Text:
+    icon = "🟠"
+    full_text = f"{icon} {text}" if text else icon
+    newText = Text(full_text, style="gold1")
+    if len(newText.plain) > truncateCharSize:
+        newText.truncate(truncateCharSize)
+    return newText
+    
+def waiting(text: str, truncateCharSize: int = 9999) -> Text:
+    icon = "⏳"
+    full_text = f"{icon} {text}" if text else icon
+    newText = Text(full_text, style="sky_blue1")
+    if len(newText.plain) > truncateCharSize:
+        newText.truncate(truncateCharSize)
+    return newText
+    
+def comment(text: str, truncateCharSize: int = 9999) -> Text:
+    icon = "📑"
+    full_text = f"{icon} {text}" if text else icon
+    newText = Text(full_text, style="slate_blue1")
+    if len(newText.plain) > truncateCharSize:
+        newText.truncate(truncateCharSize)
+    return newText
+    
+def reqChanges(text: str, truncateCharSize: int = 9999) -> Text:
+    icon = "🔖"
+    full_text = f"{icon} {text}" if text else icon
+    newText = Text(full_text, style="medium_violet_red")
+    if len(newText.plain) > truncateCharSize:
+        newText.truncate(truncateCharSize)
+    return newText
+
+def neutral(text: str, truncateCharSize: int = 9999) -> Text:
+    icon = "⬜"
+    full_text = f"{icon} {text}" if text else icon
+    newText = Text(full_text, style="grey42")
+    if len(newText.plain) > truncateCharSize:
+        newText.truncate(truncateCharSize)
+    return newText
 
 
 class OutputBuilder:

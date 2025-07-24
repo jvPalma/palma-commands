@@ -14,6 +14,7 @@ class PullRequest:
         url: str,
         branch: str,
         is_draft: bool,
+        role: str = None,
     ):
         self.id = id
         self.title = title
@@ -24,9 +25,13 @@ class PullRequest:
         self.url = url
         self.branch = branch
         self.is_draft = is_draft
+        self.role = role  # Values: 'author', 'reviewer_pending', 'reviewer_completed', 'both_pending', 'both_completed'
 
         # For internal usage, e.g., 'authored', 'team', 'review_requested'
         self.source = None
+        
+        # Compatibility property for legacy code
+        self.isDraft = is_draft
 
     def summary(self) -> str:
         return f"[#{self.id}] {self.title} by {self.author}"
