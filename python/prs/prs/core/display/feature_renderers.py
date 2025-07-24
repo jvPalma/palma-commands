@@ -118,15 +118,45 @@ def render_reviews_badge(pr, summary_text: Text) -> None:
         pr: Pull request model object  
         summary_text: Rich Text object to append to
     """
-    review_summary, _ = analyze_reviews(pr)
+    review_summary, details = analyze_reviews(pr)
     
+    # Count reviews by type
+    approved_count = 0
+    changes_requested_count = 0
+    commented_count = 0
+    
+    for state, author, color in details:
+        if state == "APPROVED":
+            approved_count += 1
+        elif state == "CHANGES_REQUESTED":
+            changes_requested_count += 1
+        elif state == "COMMENTED":
+            commented_count += 1
+    
+    reviewText = Text()
+    
+    # Set overall color based on review state
     if review_summary == "APPROVED":
-        summary_text.append("[RVWS]", style="green")
+        reviewText.append("RV: ", style="green")
     elif review_summary == "REVIEW_REQUIRED":
-        summary_text.append("[RVWS]", style="yellow")
+        reviewText.append("RV: ", style="yellow")
     else:
-        summary_text.append("[RVWS]", style="red")
-    summary_text.append(" ")
+        reviewText.append("RV: ", style="red")
+    
+    # Add counts in format: approved/commented/changes_requested
+    reviewText.append(str(approved_count), style="green")
+    reviewText.append("/", style="dim")
+    reviewText.append(str(commented_count), style="yellow")
+    reviewText.append("/", style="dim")
+    reviewText.append(str(changes_requested_count), style="red")
+    
+    # Add the review text to summary and pad to SHORT_PAD_SIZE
+    summary_text.append(reviewText)
+    
+    # Calculate padding needed (measure plain text length without color codes)
+    review_plain_length = len(reviewText.plain)
+    padding_needed = max(0, SHORT_PAD_SIZE - review_plain_length)
+    summary_text.append(" " * padding_needed)
 
 
 def render_labels_badge(pr, summary_text: Text) -> None:
@@ -137,20 +167,45 @@ def render_labels_badge(pr, summary_text: Text) -> None:
         pr: Pull request model object
         summary_text: Rich Text object to append to  
     """
-    if not pr.labels:
-        summary_text.append("[LABL]", style="bright_black")
+    # Count labels by category
+    good_count = 0
+    warn_count = 0
+    danger_count = 0
+    
+    for label in pr.labels:
+        if label in DANG_LIST:
+            danger_count += 1
+        elif label in WARN_LIST:
+            warn_count += 1
+        elif label in GOOD_LIST:
+            good_count += 1
+    
+    labelText = Text()
+    
+    # Determine overall color based on highest priority label present
+    if danger_count > 0:
+        labelText.append("LB: ", style="bright_red")
+    elif warn_count > 0:
+        labelText.append("LB: ", style="yellow")
+    elif good_count > 0:
+        labelText.append("LB: ", style="green")
     else:
-        label_color = "bright_black"
-        for label in pr.labels:
-            if label in DANG_LIST:
-                label_color = "bright_red"
-                break
-            elif label in WARN_LIST:
-                label_color = "yellow"
-            elif label in GOOD_LIST and label_color == "bright_black":
-                label_color = "green"
-        summary_text.append("[LABL]", style=label_color)
-    summary_text.append(" ")
+        labelText.append("LB: ", style="bright_black")
+    
+    # Add counts in format: good/warn/danger
+    labelText.append(str(good_count), style="green")
+    labelText.append("/", style="dim")
+    labelText.append(str(warn_count), style="yellow")
+    labelText.append("/", style="dim")
+    labelText.append(str(danger_count), style="red")
+    
+    # Add the label text to summary and pad to SHORT_PAD_SIZE
+    summary_text.append(labelText)
+    
+    # Calculate padding needed (measure plain text length without color codes)
+    label_plain_length = len(labelText.plain)
+    padding_needed = max(0, SHORT_PAD_SIZE - label_plain_length)
+    summary_text.append(" " * padding_needed)
 
 
 def render_url_info(pr, mode: str) -> Text or None:
