@@ -15,7 +15,7 @@ from prs.utils.username_colors import (
 )
 
 # Version constant (should match setup.py)
-__version__ = "1.0.0"
+__version__ = "1.2.0"
 
 class ColoredHelpFormatter(argparse.RawDescriptionHelpFormatter):
     """Custom help formatter with colors and reorganized options."""
@@ -308,6 +308,22 @@ Verbosity levels: {color_text('none', 'gray-4')} (hide), {color_text('short', 'g
         default=5,
         help="Number of lines to show in long mode (default: 5)",
     )
+    parser.add_argument(
+        "-w", "--watch",
+        type=int,
+        nargs="?",
+        const=30,
+        default=None,
+        help=f"{color_text('NEW!', 'green')} Watch mode: continuously update PR status (interval in seconds, default: 30, minimum: 10)",
+    )
+    parser.add_argument(
+        "-exp", "--export",
+        type=str,
+        nargs="?",
+        const="default",
+        default=None,
+        help=f"{color_text('NEW!', 'green')} Export PRs to JSON file (optional filename, default: prs_export_YYYYMMDD_HHMMSS.json)",
+    )
 
     #! Subcommands
     subparsers = parser.add_subparsers(dest="command")
@@ -373,6 +389,12 @@ Verbosity levels: {color_text('none', 'gray-4')} (hide), {color_text('short', 'g
         args.command = "list"
 
     if args.command == "list":
+        # Watch mode validation
+        if args.watch is not None:
+            if args.watch < 10:
+                print(f"Error: Watch interval must be at least 10 seconds (got {args.watch})")
+                sys.exit(1)
+        
         options = {"include_draft": args.draft, "lines": args.lines, "no_reviewer": args.no_reviewer_prs, "no_reviewed": args.no_reviewed_prs, "include_from_ignored_users": args.include_ignored}
         if args.pr_url is not None:
             options["pr_url"] = args.pr_url
@@ -384,6 +406,14 @@ Verbosity levels: {color_text('none', 'gray-4')} (hide), {color_text('short', 'g
             options["reviews"] = args.reviews
         if args.labels is not None:
             options["labels"] = args.labels
+        
+        # Add watch interval to options if specified
+        if args.watch is not None:
+            options["watch_interval"] = args.watch
+        
+        # Add export option if specified
+        if args.export is not None:
+            options["export"] = args.export
 
         list_pull_requests(options)
     elif args.command == "config":

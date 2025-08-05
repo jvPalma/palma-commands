@@ -4,21 +4,23 @@ from prs.utils.formatting import color_text
 
 def analyze_reviews(pr: PullRequest):
     """
-    Analyzes the reviews on the given PR.
+    Analyzes the reviews on the given PR, including pending review requests.
 
     Returns a tuple:
       (summary, details)
     where summary is a string:
-      - "N/A" if there are no reviews,
+      - "N/A" if there are no reviews and no review requests,
       - "APPROVED" if any review is APPROVED,
       - otherwise "REVIEW_REQUIRED"
     and details is a list of tuples (state, author, color)
-    for each unique reviewer.
+    for each unique reviewer (including requested reviewers).
     """
     total = 0
     approved = False
     details = []
     seen_authors = set()
+    
+    # Process completed reviews
     for review in pr.reviews:
         author = review.get("author")
         # Extract author login from the author dict
@@ -40,6 +42,29 @@ def analyze_reviews(pr: PullRequest):
         else:
             color = "red"
         details.append((state, author_login, color))
+    
+    # Process pending review requests
+    for request in pr.review_requests:
+        # Review requests can be for users or teams
+        if isinstance(request, dict):
+            # Check if it's a user request
+            if "login" in request:
+                author_login = request.get("login")
+            # Check if it's a team request
+            elif "name" in request:
+                author_login = f"team:{request.get('name')}"
+            else:
+                continue
+                
+            # Skip if this author already has a completed review
+            if author_login in seen_authors:
+                continue
+                
+            seen_authors.add(author_login)
+            total += 1
+            # Pending review requests are shown in gray
+            details.append(("PENDING", author_login, "gray"))
+    
     if total == 0:
         summary = "N/A"
     elif approved:

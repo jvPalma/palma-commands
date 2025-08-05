@@ -62,5 +62,7 @@ def pr_info_to_model(pr_json: dict, source_tag: str = None) -> PullRequest:
         labels=labels,
         checks=checks_raw,
         reviews=reviews_raw,
+        review_requests=reviewRequests_raw,
         role=role,
+        raw_data=pr_json,  # Store the complete API response
     )

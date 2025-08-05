@@ -15,6 +15,8 @@ class PullRequest:
         branch: str,
         is_draft: bool,
         role: str = None,
+        review_requests: list[dict] = None,
+        raw_data: dict = None,
     ):
         self.id = id
         self.title = title
@@ -22,10 +24,12 @@ class PullRequest:
         self.labels = labels
         self.checks = checks
         self.reviews = reviews
+        self.review_requests = review_requests if review_requests is not None else []
         self.url = url
         self.branch = branch
         self.is_draft = is_draft
         self.role = role  # Values: 'author', 'reviewer_pending', 'reviewer_completed', 'both_pending', 'both_completed'
+        self.raw_data = raw_data if raw_data is not None else {}
 
         # For internal usage, e.g., 'authored', 'team', 'review_requested'
         self.source = None

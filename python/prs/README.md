@@ -18,6 +18,8 @@ PRS is a powerful command-line utility to monitor and manage your GitHub pull re
 - **🔧 Configuration Management:** Built-in config editor and command-line configuration
 - **📱 Responsive Layout:** Dynamic column sizing with intelligent width distribution
 - **🎯 Reviewer Integration:** Dedicated support for PRs where you're assigned as reviewer
+- **📤 JSON Export:** Export PR data to JSON files with comprehensive metadata and filtering details
+- **🔄 Enhanced Review Display:** Improved review status visualization with detailed breakdown
 
 ## 📋 Requirements
 
@@ -76,6 +78,14 @@ prs --no-reviewed
 
 # Set verbosity for specific components
 prs --checks long --reviews normal --labels short
+
+# Export PR data to JSON
+prs --export
+prs -exp
+
+# Export to custom filename
+prs --export my_prs.json
+prs -exp team_prs_$(date +%Y%m%d).json
 ```
 
 ### Configuration Commands
@@ -107,6 +117,86 @@ prs ignore-users bot-user ci-bot
 # View version information
 prs --version
 ```
+
+### Data Export
+
+#### JSON Export Feature
+
+Export PR data to JSON files for analysis, backup, or integration with other tools:
+
+```bash
+# Export with default filename (prs_export_YYYYMMDD_HHMMSS.json)
+prs --export
+prs -exp
+
+# Export to custom filename
+prs --export my_team_prs.json
+prs -exp "backup_$(date +%Y%m%d).json"
+
+# Export with filtering options
+prs --export --draft --no-reviewer archive.json
+```
+
+#### Export File Structure
+
+The exported JSON file contains comprehensive PR data with metadata:
+
+```json
+{
+  "metadata": {
+    "exported_at": "2025-01-15T10:30:45.123Z",
+    "filters": {
+      "state": "open",
+      "include_draft": false,
+      "no_reviewer": false,
+      "no_reviewed": false
+    },
+    "total_count": 25,
+    "ignored_count": 3,
+    "source_breakdown": {
+      "authored": 15,
+      "reviewer_pending": 5,
+      "reviewer_completed": 3,
+      "both_pending": 1,
+      "both_completed": 1
+    }
+  },
+  "pullRequests": [
+    {
+      "number": 1234,
+      "title": "Add new authentication feature",
+      "author": { "login": "johndoe" },
+      "labels": [
+        { "name": "feature" },
+        { "name": "backend" }
+      ],
+      "statusCheckRollup": {
+        "state": "SUCCESS",
+        "contexts": [ /* ... */ ]
+      },
+      "reviews": { /* detailed review data */ },
+      "reviewRequests": { /* review request data */ },
+      "url": "https://github.com/org/repo/pull/1234",
+      "headRefName": "feature/auth-improvements",
+      "isDraft": false,
+      "_metadata": {
+        "ignored": false,
+        "source": "authored",
+        "role": "author"
+      }
+    }
+  ]
+}
+```
+
+#### Export Features
+
+- **Complete Data**: Includes all PR information, even for ignored PRs
+- **Metadata Tracking**: Export timestamp, applied filters, and source breakdown
+- **Raw API Data**: Preserves original GitHub API response when available
+- **Source Tracking**: Identifies whether PRs are authored, reviewed, or both
+- **Filter Transparency**: Shows exactly which filters were applied during export
+- **Automatic Timestamping**: Default filenames include UTC timestamp for uniqueness
 
 ## ⚙️ Configuration
 
@@ -232,6 +322,23 @@ prs ignore-users dependabot renovate-bot
 prs config all | grep ignored
 ```
 
+### Data Export and Analysis
+
+```bash
+# Export for data analysis
+prs --export analysis_$(date +%Y%m%d).json
+
+# Export with specific filters
+prs --export --draft --no-reviewer draft_analysis.json
+
+# Export all data including ignored PRs
+prs --export complete_backup.json
+
+# Use with jq for analysis
+prs --export - | jq '.metadata.source_breakdown'
+prs --export - | jq '.pullRequests[] | select(.isDraft == true)'
+```
+
 ## 🏗️ Development and Building
 
 ### Development Setup
@@ -322,6 +429,18 @@ GitHub CLI (subprocess calls to 'gh')
    
    # Test colors
    prs --checks short --reviews short
+   ```
+
+4. **Export not working**
+   ```bash
+   # Check file permissions
+   ls -la $(pwd)
+   
+   # Try with explicit path
+   prs --export ./my_export.json
+   
+   # Check disk space
+   df -h .
    ```
 
 ### Debug Mode
